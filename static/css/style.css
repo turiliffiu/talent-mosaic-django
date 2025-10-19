@@ -1,0 +1,24 @@
+/* Custom CSS per Talent Mosaic */
+
+:root {
+    --primary-color: #3B82F6;
+    --secondary-color: #8B5CF6;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
