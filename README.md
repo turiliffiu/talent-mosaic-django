@@ -1,7 +1,5 @@
 # 🎯 Talent Mosaic - Django Edition
 
-Sistema completo di talent management basato su Python/Django.
-Descrizione sintetica del progetto:
 Talent Mosaic è un programma innovativo che mira a valorizzare le persone e le loro competenze, promuovendo una cultura aziendale realmente inclusiva, collaborativa e orientata alla crescita.
 Attraverso una piattaforma digitale interna, l’iniziativa permette a ogni dipendente di esprimere il proprio potenziale, condividere esperienze e sviluppare nuove connessioni professionali, favorendo così l’incontro tra diversità e innovazione.
 
