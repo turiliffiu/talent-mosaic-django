@@ -5,7 +5,7 @@ BACKUP_DIR="/opt/backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 DB_NAME="talent_mosaic"
 DB_USER="talent_user"
-DB_HOST="192.168.1.11"
+DB_HOST="192.168.1.184"
 
 # Crea directory backup
 mkdir -p $BACKUP_DIR
