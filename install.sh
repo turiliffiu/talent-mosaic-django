@@ -225,10 +225,11 @@ chmod 600 ${PROJECT_PATH}/.env
 
 print_success "File .env creato"
 
-# Migrazioni database
+# Preparazione Migrazioni
 print_info "Preparazione migrazioni..."
 sudo -u ${PROJECT_NAME} bash -c "cd ${PROJECT_PATH} && source venv/bin/activate && python manage.py makemigrations"
 
+# Migrazioni database
 print_info "Esecuzione migrazioni database..."
 sudo -u ${PROJECT_NAME} bash -c "cd ${PROJECT_PATH} && source venv/bin/activate && python manage.py migrate"
 
