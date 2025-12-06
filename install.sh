@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# Script di Installazione Automatica - Dashboard Procedure Operative
+# Script di Installazione Automatica - Talent Mosaic 
 # Versione: 1.0
 # Descrizione: Installa e configura automaticamente l'applicazione Django
 #              Dashboard con Nginx, Gunicorn e systemd
@@ -17,9 +17,9 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Variabili di configurazione
-PROJECT_NAME="dashboard"
+PROJECT_NAME="talent"
 PROJECT_PATH="/opt/${PROJECT_NAME}"
-GIT_REPO="https://github.com/turiliffiu/dashboard_project3.git"
+GIT_REPO="https://github.com/turiliffiu/talent-mosaic-django.git"
 PYTHON_VERSION="3.11"
 NGINX_USER="www-data"
 SERVER_IP=""
@@ -263,7 +263,7 @@ chown -R ${PROJECT_NAME}:${PROJECT_NAME} ${PROJECT_PATH}/staticfiles
 
 # Verifica permessi
 print_info "Verifica accesso www-data ai file statici..."
-if sudo -u ${NGINX_USER} test -r ${PROJECT_PATH}/staticfiles/css/dashboard.css; then
+if sudo -u ${NGINX_USER} test -r ${PROJECT_PATH}/staticfiles/css/style.css; then
     print_success "Permessi corretti - www-data può leggere i file"
 else
     print_error "www-data NON può leggere i file statici!"
@@ -348,7 +348,7 @@ chown ${PROJECT_NAME}:${PROJECT_NAME} /var/log/${PROJECT_NAME}
 print_info "Creazione service systemd..."
 cat > /etc/systemd/system/gunicorn.service << EOF
 [Unit]
-Description=Gunicorn daemon for Dashboard Django project
+Description=Gunicorn daemon for Talent Mosaic project
 After=network.target
 
 [Service]
@@ -408,7 +408,7 @@ done
 
 # Test accesso file statici
 print_info "Test accesso file statici..."
-if curl -s -o /dev/null -w "%{http_code}" http://localhost/static/css/dashboard.css | grep -q "200"; then
+if curl -s -o /dev/null -w "%{http_code}" http://localhost/static/css/style.css | grep -q "200"; then
     print_success "File statici accessibili"
 else
     print_error "File statici NON accessibili (verifica permessi)"
