@@ -130,17 +130,21 @@ apt install -y curl
 ```
 
 ### 8. Crea utente applicativo
-`sudo adduser --system --group --home /opt/dashboard dashboard` <br>
-`sudo mkdir -p /opt/dashboard` <br>
-`sudo chown dashboard:dashboard /opt/dashboard` <br>
+```bash
+sudo adduser --system --group --home /opt/talent talent
+sudo mkdir -p /opt/talent
+sudo chown talent:talent /opt/talent
+```
 
 ## 🧬 3️⃣ — Clonare il progetto da GitHub
-### 1. Diventa utente dashboard
-`sudo usermod -s /bin/bash dashboard` <br>
-`sudo su - dashboard` <br>
+### 1. Diventa utente talent
+```bash
+sudo usermod -s /bin/bash talent
+sudo su - talent
+```
 
 ### 2. Clona repository
-`cd /opt/dashboard` <br>
+`cd /opt/talent` <br>
 `git clone https://github.com/turiliffiu/dashboard_project3.git .` <br>
 
 Ora la struttura del progetto Django sarà disponibile sul server
