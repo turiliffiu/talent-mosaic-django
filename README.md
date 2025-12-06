@@ -331,7 +331,11 @@ Torna all'utente dashboard:
 
 ```bash
 sudo su - talent
+```
+```bash
 cd /opt/talent
+```
+```bash
 source venv/bin/activate 
 ```
 
