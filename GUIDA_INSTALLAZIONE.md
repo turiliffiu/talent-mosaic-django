@@ -47,7 +47,7 @@ apt install -y net-tools
 ### 1️⃣ Scarica lo script
 
 ```bash
-wget https://raw.githubusercontent.com/turiliffiu/dashboard_project3/main/install.sh
+wget https://raw.githubusercontent.com/turiliffiu/talent-mosaic-django/main/install.sh
 ```
 
 ### 2️⃣ Rendi eseguibile
