@@ -323,7 +323,7 @@ systemctl status nginx
 Apri nel browser:
 ```bash
 http://IP_del_server/static/css/style.css
-```bash
+```
 
 **Dovresti vedere il contenuto del file CSS.** Se ottieni 403 o 404, rivedi i permessi!
 
