@@ -85,8 +85,8 @@ Lo script esegue automaticamente tutti i passaggi del README:
 - Git
 
 ### ✅ STEP 4: Creazione Utente
-- Crea utente `dashboard`
-- Configura home in `/opt/dashboard`
+- Crea utente `talent`
+- Configura home in `/opt/talent`
 
 ### ✅ STEP 5: Clonazione Progetto
 - Clona da GitHub automaticamente
@@ -105,7 +105,7 @@ Lo script esegue automaticamente tutti i passaggi del README:
 - Popola database con esempi
 
 ### ✅ STEP 8: Permessi (FONDAMENTALE!)
-- Imposta `chmod 755` su `/opt` e `/opt/dashboard`
+- Imposta `chmod 755` su `/opt` e `/opt/talent`
 - Imposta `chmod -R 755` su `staticfiles`
 - **Verifica** che `www-data` possa leggere i file
 
@@ -155,14 +155,14 @@ http://TUO_IP_SERVER
 
 ### Crea Superuser (se non fatto durante installazione)
 ```bash
-sudo su - dashboard
-cd /opt/dashboard
+sudo su - talent
+cd /opt/talent
 source venv/bin/activate
 python manage.py createsuperuser
 ```
 
 ### Accedi all'Admin
-```
+```bash
 http://TUO_IP_SERVER/admin
 ```
 
@@ -182,10 +182,10 @@ sudo systemctl restart nginx
 sudo journalctl -u gunicorn -f
 
 # Log Nginx errori
-sudo tail -f /var/log/nginx/dashboard_error.log
+sudo tail -f /var/log/nginx/talent_error.log
 
 # Log Nginx accessi
-sudo tail -f /var/log/nginx/dashboard_access.log
+sudo tail -f /var/log/nginx/talent_access.log
 ```
 
 ### Status Servizi
@@ -197,8 +197,8 @@ sudo systemctl status redis-server
 
 ### Aggiorna Progetto
 ```bash
-sudo su - dashboard
-cd /opt/dashboard
+sudo su - talent
+cd /opt/talent
 git pull
 source venv/bin/activate
 pip install -r requirements.txt
@@ -245,14 +245,14 @@ sudo journalctl -u gunicorn -n 50
 **Verifica permessi:**
 ```bash
 ls -la /opt/dashboard/staticfiles/css/
-sudo -u www-data cat /opt/dashboard/staticfiles/css/dashboard.css
+sudo -u www-data cat /opt/dashboard/staticfiles/css/style.css
 ```
 
 **Correggi manualmente:**
 ```bash
 sudo chmod 755 /opt
-sudo chmod 755 /opt/dashboard
-sudo chmod -R 755 /opt/dashboard/staticfiles
+sudo chmod 755 /opt/talent
+sudo chmod -R 755 /opt/talent/staticfiles
 sudo systemctl restart nginx
 ```
 
@@ -277,14 +277,14 @@ sudo tail -f /var/log/nginx/error.log
 Lo script genera automaticamente una SECRET_KEY sicura, ma verifica sempre:
 
 ```bash
-sudo cat /opt/dashboard/.env
+sudo cat /opt/talent/.env
 ```
 
 Dovrebbe contenere:
 ```
 DEBUG=False
 SECRET_KEY=una_chiave_lunga_e_casuale_generata_automaticamente
-STATIC_ROOT=/opt/dashboard/staticfiles
+STATIC_ROOT=/opt/talent/staticfiles
 STATIC_URL=/static/
 ```
 
@@ -292,12 +292,12 @@ STATIC_URL=/static/
 
 ```bash
 # .env deve essere leggibile solo da dashboard
-sudo chmod 600 /opt/dashboard/.env
-sudo chown dashboard:dashboard /opt/dashboard/.env
+sudo chmod 600 /opt/talent/.env
+sudo chown talent:talent /opt/talent/.env
 
 # Database deve essere protetto
-sudo chmod 600 /opt/dashboard/db.sqlite3
-sudo chown dashboard:dashboard /opt/dashboard/db.sqlite3
+sudo chmod 600 /opt/talent/db.sqlite3
+sudo chown talent:talent /opt/talent/db.sqlite3
 ```
 
 ---
@@ -305,7 +305,7 @@ sudo chown dashboard:dashboard /opt/dashboard/db.sqlite3
 ## 📊 STRUTTURA FILE DOPO INSTALLAZIONE
 
 ```
-/opt/dashboard/
+/opt/talent/
 ├── venv/                    # Virtual environment Python
 ├── dashboard_project/       # Configurazione Django
 ├── procedures/              # App principale
@@ -349,7 +349,7 @@ Modifica nello script:
 Poi aggiorna anche Nginx:
 ```bash
 # Nel blocco upstream:
-upstream dashboard {
+upstream talent {
     server 127.0.0.1:9000 fail_timeout=0;
 }
 ```
@@ -393,10 +393,10 @@ Lo script può essere usato su più server:
 
 ```bash
 # Backup directory se già esiste
-sudo tar -czf /root/dashboard_backup_$(date +%Y%m%d_%H%M%S).tar.gz /opt/dashboard
+sudo tar -czf /root/talent_backup_$(date +%Y%m%d_%H%M%S).tar.gz /opt/talent
 
 # Backup database
-sudo cp /opt/dashboard/db.sqlite3 /root/db_backup_$(date +%Y%m%d).sqlite3
+sudo cp /opt/talent/db.sqlite3 /root/db_backup_$(date +%Y%m%d).sqlite3
 ```
 
 ---
