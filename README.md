@@ -303,7 +303,7 @@ chown -R talent:talent /opt/talent/staticfiles
 
 ### 3. Verifica che www-data possa leggere i file
 ```bash
-sudo -u www-data cat /opt/talent/staticfiles/css/talent.css | head -5
+sudo -u www-data cat /opt/talent/staticfiles/css/style.css | head -5
 ```
 
 Se vedi il contenuto del CSS, i permessi sono corretti! ✅
