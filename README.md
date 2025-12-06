@@ -144,8 +144,13 @@ sudo su - talent
 ```
 
 ### 2. Clona repository
-`cd /opt/talent` <br>
-`git clone https://github.com/turiliffiu/dashboard_project3.git .` <br>
+```bash
+cd /opt/talent
+```
+
+```bash
+git clone https://github.com/turiliffiu/talent-mosaic-django.git .
+```
 
 Ora la struttura del progetto Django sarà disponibile sul server
 
