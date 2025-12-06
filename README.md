@@ -92,28 +92,44 @@ apt install -y net-tools
 `ssh root@192.168.1.xxx` <br>
 
 ### 1. Aggiorna sistema
-`sudo apt update && sudo apt upgrade -y` <br>
+```bash
+sudo apt update && sudo apt upgrade -y
+```
 
 ### 2. Installa Python 3.11
-`sudo apt install python3.11 python3.11-venv python3.11-dev -y` <br>
-`sudo apt install python3-pip build-essential libpq-dev -y` <br>
-
+```bash
+sudo apt install python3.11 python3.11-venv python3.11-dev -y
+sudo apt install python3-pip build-essential libpq-dev -y
+```
 ### 3. Installa NGINX
-`sudo apt install nginx -y` <br>
-`sudo systemctl enable nginx` <br>
+```bash
+sudo apt install nginx -y
+sudo systemctl enable nginx
+```
 
 ### 4. Installa Redis
-`sudo apt install redis-server -y` <br>
-`sudo systemctl enable redis-server` <br>
+```bash
+sudo apt install redis-server -y
+sudo systemctl enable redis-server
+```
 
 ### 5. Installa supervisor (per gestire processi)
-`sudo apt install supervisor -y` <br>
-`sudo systemctl enable supervisor` <br>
+```bash
+sudo apt install supervisor -y
+sudo systemctl enable supervisor
+```
 
 ### 6. Installa Git
-`sudo apt install git -y` <br>
+```bash
+sudo apt install git -y
+```
 
-### 7. Crea utente applicativo
+### 7. Installa Curl
+```bash
+apt install -y curl
+```
+
+### 8. Crea utente applicativo
 `sudo adduser --system --group --home /opt/dashboard dashboard` <br>
 `sudo mkdir -p /opt/dashboard` <br>
 `sudo chown dashboard:dashboard /opt/dashboard` <br>
