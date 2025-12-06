@@ -342,7 +342,7 @@ source venv/bin/activate
 Avvia Gunicorn:
 
 ```bash
-gunicorn --bind 127.0.0.1:8000 --workers 3 talent.wsgi:application
+gunicorn --bind 127.0.0.1:8000 --workers 3 talent_mosaic.wsgi:application
 ```
 
 Controlla se funziona aprendo:
