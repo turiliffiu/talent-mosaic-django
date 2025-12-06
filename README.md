@@ -156,32 +156,41 @@ Ora la struttura del progetto Django sarà disponibile sul server
 
 ## 🐍 4️⃣ — Creare l'ambiente virtuale e installare le dipendenze
 ### 1. Crea virtual environment
-`python3.11 -m venv venv` <br>
-`source venv/bin/activate` <br>
+```bash
+python3.11 -m venv venv
+source venv/bin/activate
+```
 
 ### 2. Installa dipendenze
-`pip install --upgrade pip` <br>
-`pip install -r requirements.txt` <br>
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
 
 
 ## ⚙️ 5️⃣ — Configurare Django
 ### Crea il file `.env`
 
-`nano .env` <br>
+```bash
+nano .env
+```
 
 Scrivi:
 
-     DEBUG=False
-     SECRET_KEY=metti_una_tua_chiave_sicura    
-     STATIC_ROOT=/opt/dashboard/staticfiles
-     STATIC_URL=/static/
+```bash
+DEBUG=False
+SECRET_KEY=metti_una_tua_chiave_sicura    
+STATIC_ROOT=/opt/talent/staticfiles
+STATIC_URL=/static/
+```
 
-ATTENZIONE: togliere gli spazi a sx quando si fa il copia e incolla per creare il file `.env` e inserire una propria SECRET_KEY
 
 ### Esegui le migrazioni e raccogli statici
-`python manage.py migrate` <br>
-`python manage.py collectstatic --noinput` <br>
-`python manage.py createsuperuser` <br>
+```bash
+python manage.py migrate
+python manage.py collectstatic --noinput
+python manage.py createsuperuser
+```
 
 NOTA: il superuser serve per entrare nell'appweb come amministratore quindi, se si vuole, si può usare come nome `admin`
 
