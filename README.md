@@ -357,12 +357,16 @@ Dovresti vedere la tua app Django servita tramite Nginx ✅
 ### Passi per configurare:
 Crea la directory per i log (come root):
 
-`mkdir -p /var/log/dashboard` <br>
-`chown dashboard:dashboard /var/log/dashboard` <br>
+```bash
+mkdir -p /var/log/talent
+chown dashboard:dashboard /var/log/talent
+```
 
 Crea il file systemd (come root):
 
-`nano /etc/systemd/system/gunicorn.service` <br>
+```bash
+nano /etc/systemd/system/gunicorn.service
+```
 
 Incolla questa configurazione:
 
@@ -372,16 +376,16 @@ Incolla questa configurazione:
      
      [Service]
      Type=notify
-     User=dashboard
-     Group=dashboard
-     WorkingDirectory=/opt/dashboard
-     Environment="PATH=/opt/dashboard/venv/bin"
-     ExecStart=/opt/dashboard/venv/bin/gunicorn \
+     User=talent
+     Group=talent
+     WorkingDirectory=/opt/talent
+     Environment="PATH=/opt/talent/venv/bin"
+     ExecStart=/opt/talent/venv/bin/gunicorn \
                --workers 3 \
                --bind 127.0.0.1:8000 \
-               --access-logfile /var/log/dashboard/access.log \
-               --error-logfile /var/log/dashboard/error.log \
-               dashboard_project.wsgi:application
+               --access-logfile /var/log/talent/access.log \
+               --error-logfile /var/log/talent/error.log \
+               talent_mosaic.wsgi:application
      
      Restart=on-failure
      RestartSec=5s
@@ -393,13 +397,17 @@ ATTENZIONE: togliere gli spazi a sx quando si fa il copia e incolla
 
 Ricarica systemd e avvia il servizio:
 
-`systemctl daemon-reload` <br>
-`systemctl start gunicorn` <br>
-`systemctl enable gunicorn` <br>
+```bash
+systemctl daemon-reload
+systemctl start gunicorn
+systemctl enable gunicorn
+```
 
 Verifica lo stato:
 
-`systemctl status gunicorn` <br>
+```bash
+systemctl status gunicorn
+```
 
 ## Ora Gunicorn partirà automaticamente all'avvio del server! 🎉
 
