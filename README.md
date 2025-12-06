@@ -196,18 +196,22 @@ python manage.py createsuperuser
 NOTA: il superuser serve per entrare nell'appweb come amministratore quindi, se si vuole, si può usare come nome `admin`
 
 ### Popola il data base con dei file di esempio
-`python manage.py populate_db` <br>
- 
+```bash
+python manage.py populate_db
+ ```
+
 ### Testa il server Django (verifica che funzioni)
 
 ATTENZIONE: per testare in server in locale devi impostare `DEBUG=True` sul file `.env`
-
-`python manage.py runserver 0.0.0.0:8000`
-
+```bash
+python manage.py runserver 0.0.0.0:8000
+```
 
 Apri il browser e vai su:
 
-`http://IP_del_server:8000`
+```bash
+http://IP_del_server:8000
+```
 
 Se vedi il tuo sito Django → funziona!
 
