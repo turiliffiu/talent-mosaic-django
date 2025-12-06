@@ -312,7 +312,7 @@ Se ottieni "Permission denied", ripeti i comandi chmod sopra.
 
 ### 4. Attiva la configurazione Nginx
 ```bash
-ln -s /etc/nginx/sites-available/dashboard /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/talent /etc/nginx/sites-enabled/
 rm /etc/nginx/sites-enabled/default
 nginx -t
 systemctl restart nginx
@@ -322,7 +322,7 @@ systemctl status nginx
 ### 5. Test accesso diretto al CSS
 Apri nel browser:
 ```bash
-http://IP_del_server/static/css/talent.css
+http://IP_del_server/static/css/style.css
 ```bash
 
 **Dovresti vedere il contenuto del file CSS.** Se ottieni 403 o 404, rivedi i permessi!
