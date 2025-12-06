@@ -262,7 +262,7 @@ Inserisci:
          
          # Tutte le altre richieste vanno a Gunicorn
          location / {
-             proxy_pass http://dashboard;
+             proxy_pass http://talent;
              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
              proxy_set_header Host $host;
              proxy_set_header X-Forwarded-Proto $scheme;
@@ -288,46 +288,58 @@ ATTENZIONE: assicurati che NON ci siano spazi all'inizio di ogni riga quando fai
 Esegui i seguenti comandi come utente `root`:
 
 ### 1. Permessi sulle directory parent
-`chmod 755 /opt` <br>
-`chmod 755 /opt/dashboard` <br>
+```bash
+chmod 755 /opt
+chmod 755 /opt/talent
+```
 
 **Perché è necessario?** Nginx (utente `www-data`) deve poter "attraversare" tutte le directory fino ad arrivare ai file CSS/JS.
 
 ### 2. Permessi sui file statici
-`chmod -R 755 /opt/dashboard/staticfiles` <br>
-`chown -R dashboard:dashboard /opt/dashboard/staticfiles` <br>
+```bash
+chmod -R 755 /opt/talent/staticfiles
+chown -R talent:talent /opt/talent/staticfiles
+```
 
 ### 3. Verifica che www-data possa leggere i file
-`sudo -u www-data cat /opt/dashboard/staticfiles/css/dashboard.css | head -5` <br>
+```bash
+sudo -u www-data cat /opt/talent/staticfiles/css/talent.css | head -5
+```
 
 Se vedi il contenuto del CSS, i permessi sono corretti! ✅
 
 Se ottieni "Permission denied", ripeti i comandi chmod sopra.
 
 ### 4. Attiva la configurazione Nginx
-`ln -s /etc/nginx/sites-available/dashboard /etc/nginx/sites-enabled/` <br>
-`rm /etc/nginx/sites-enabled/default` <br>
-`nginx -t` <br>
-`systemctl restart nginx` <br>
-`systemctl status nginx` <br>
+```bash
+ln -s /etc/nginx/sites-available/dashboard /etc/nginx/sites-enabled/
+rm /etc/nginx/sites-enabled/default
+nginx -t
+systemctl restart nginx
+systemctl status nginx
+```
 
 ### 5. Test accesso diretto al CSS
 Apri nel browser:
-
-`http://IP_del_server/static/css/dashboard.css`
+```bash
+http://IP_del_server/static/css/talent.css
+```bash
 
 **Dovresti vedere il contenuto del file CSS.** Se ottieni 403 o 404, rivedi i permessi!
 
 Torna all'utente dashboard:
 
-`sudo su - dashboard` <br>
-`cd /opt/dashboard` <br>
-`source venv/bin/activate` <br>  
+```bash
+sudo su - talent
+cd /opt/talent
+source venv/bin/activate 
+```
 
 Avvia Gunicorn:
 
-`gunicorn --bind 127.0.0.1:8000 --workers 3 dashboard_project.wsgi:application` <br>
-
+```bash
+gunicorn --bind 127.0.0.1:8000 --workers 3 talent.wsgi:application
+```
 
 Controlla se funziona aprendo:
 
