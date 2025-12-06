@@ -68,17 +68,28 @@ La piattaforma include anche:
 
 Sulla shell del nuovo Container su Proxmox:
 
-`sudo nano /etc/ssh/sshd_config` <br>
+```bash
+sudo nano /etc/ssh/sshd_config
+```
 
-Modificare i seguneti parametri:
+Modificare i seguenti parametri:
 
-     PermitRootLogin yes
-     PasswordAuthentication yes
-     PermitEmptyPasswords no
+```bash
+PermitRootLogin yes
+PasswordAuthentication yes
+PermitEmptyPasswords no
+```
+
+Installare ifconfig
+
+```bash
+apt update
+apt install -y net-tools 
+```
           
 ## 🧰 2️⃣ — Installare i pacchetti necessari
 ### SSH nella VM
-`ssh admin@192.168.1.xxx` <br>
+`ssh root@192.168.1.xxx` <br>
 
 ### 1. Aggiorna sistema
 `sudo apt update && sudo apt upgrade -y` <br>
