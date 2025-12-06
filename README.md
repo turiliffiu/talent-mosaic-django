@@ -371,7 +371,7 @@ nano /etc/systemd/system/gunicorn.service
 Incolla questa configurazione:
 
      [Unit]
-     Description=Gunicorn daemon for Dashboard Django project
+     Description=Gunicorn daemon for Talent Mosaic Django project
      After=network.target
      
      [Service]
@@ -420,9 +420,9 @@ systemctl status gunicorn
 **Sintomo:** La dashboard non carica i CSS, ottieni errore 403.
 
 **Soluzione:**
-1. Verifica permessi: `ls -la /opt/dashboard/staticfiles/css/`
-2. Esegui: `chmod 755 /opt && chmod 755 /opt/dashboard && chmod -R 755 /opt/dashboard/staticfiles`
-3. Testa: `sudo -u www-data cat /opt/dashboard/staticfiles/css/dashboard.css`
+1. Verifica permessi: `ls -la /opt/talent/staticfiles/css/`
+2. Esegui: `chmod 755 /opt && chmod 755 /opt/talent && chmod -R 755 /opt/talent/staticfiles`
+3. Testa: `sudo -u www-data cat /opt/talent/staticfiles/css/style.css`
 4. Riavvia Nginx: `systemctl restart nginx`
 
 ### Problema: CSS non si carica nella dashboard
@@ -437,7 +437,7 @@ systemctl status gunicorn
 
 **Verifica:**
 1. `systemctl status gunicorn` per vedere errori
-2. Log: `tail -f /var/log/dashboard/error.log`
+2. Log: `tail -f /var/log/talent/error.log`
 3. File .env esiste e contiene SECRET_KEY
 4. Virtual environment è attivo
 
@@ -446,7 +446,7 @@ systemctl status gunicorn
 ## 📝 NOTE IMPORTANTI
 
 - ⚠️ **STATIC_URL** nel file .env deve terminare con `/` → `/static/`
-- ⚠️ **Permessi 755** sono necessari su `/opt`, `/opt/dashboard` e `staticfiles/`
+- ⚠️ **Permessi 755** sono necessari su `/opt`, `/opt/talent` e `staticfiles/`
 - ⚠️ La configurazione Nginx **NON deve avere spazi** all'inizio delle righe
 - ⚠️ Dopo ogni modifica a `.env`, riavvia Gunicorn: `systemctl restart gunicorn`
 - ⚠️ In produzione, **DEBUG deve essere False**
