@@ -221,13 +221,15 @@ ATTENZIONE: per continuare con il server in deploy devi impostare `DEBUG=False` 
 
 Interrompi il server di sviluppo (CTRL+C) e installa Gunicorn:
 
-`pip install gunicorn`
-
+```bash
+pip install gunicorn
+```
 
 Prova a eseguire l'app:
 
-`gunicorn --bind 0.0.0.0:8000 dashboard_project.wsgi`
-
+```bash
+gunicorn --bind 0.0.0.0:8000 talent_mosaic.wsgi
+```
 
 (sostituisci nome_progetto con quello della tua cartella Django principale — quella dove c'è settings.py)
 
@@ -235,23 +237,25 @@ Prova a eseguire l'app:
 
 Crea un file di configurazione da utente `root`:
 
-`nano /etc/nginx/sites-available/dashboard`
+```bash
+nano /etc/nginx/sites-available/talent
+```
 
 Inserisci:
 
-     upstream dashboard {
+     upstream talent {
          server 127.0.0.1:8000 fail_timeout=0;
      }
      
      server {
          listen 80;
-         server_name 192.168.1.xxx dashboard.local;  # Sostituisci xxx con il tuo IP
+         server_name 192.168.1.xxx talent.local;  # Sostituisci xxx con il tuo IP
          
          client_max_body_size 10M;
          
          # File statici (CSS, JS, immagini)
          location /static/ {
-             alias /opt/dashboard/staticfiles/;
+             alias /opt/talent/staticfiles/;
              expires 30d;
              add_header Cache-Control "public, immutable";
          }
@@ -271,8 +275,8 @@ Inserisci:
          }
          
          # Log
-         access_log /var/log/nginx/dashboard_access.log;
-         error_log /var/log/nginx/dashboard_error.log;
+         access_log /var/log/nginx/talent_access.log;
+         error_log /var/log/nginx/talent_error.log;
      }
 
 ATTENZIONE: assicurati che NON ci siano spazi all'inizio di ogni riga quando fai copia/incolla. Le righe devono iniziare senza spazi a sinistra.
