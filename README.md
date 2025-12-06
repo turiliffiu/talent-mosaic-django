@@ -187,7 +187,16 @@ STATIC_URL=/static/
 
 ### Esegui le migrazioni e raccogli statici
 ```bash
-python manage.py makemigrations
+python manage.py makemigrations accounts
+python manage.py makemigrations skills
+python manage.py makemigrations matching
+python manage.py makemigrations mentorship
+python manage.py makemigrations events
+python manage.py makemigrations challenges
+python manage.py makemigrations badges
+python manage.py makemigrations analytics
+python manage.py makemigrations core
+python manage.py makemigrations api
 python manage.py migrate
 python manage.py collectstatic --noinput
 python manage.py createsuperuser
