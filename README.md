@@ -327,7 +327,7 @@ http://IP_del_server/static/css/style.css
 
 **Dovresti vedere il contenuto del file CSS.** Se ottieni 403 o 404, rivedi i permessi!
 
-Torna all'utente dashboard:
+Torna all'utente talent:
 
 ```bash
 sudo su - talent
@@ -359,7 +359,7 @@ Crea la directory per i log (come root):
 
 ```bash
 mkdir -p /var/log/talent
-chown dashboard:dashboard /var/log/talent
+chown talent:talent /var/log/talent
 ```
 
 Crea il file systemd (come root):
