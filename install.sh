@@ -225,9 +225,14 @@ chmod 600 ${PROJECT_PATH}/.env
 
 print_success "File .env creato"
 
-# Preparazione Migrazioni
-print_info "Preparazione migrazioni..."
-sudo -u ${PROJECT_NAME} bash -c "cd ${PROJECT_PATH} && source venv/bin/activate && python manage.py makemigrations"
+# Preparazione migrazioni database per tutte le app
+print_info "Preparazione migrazioni database..."
+APPS=("accounts" "skills" "matching" "mentorship" "events" "challenges" "badges" "analytics" "core" "api")
+
+for app in "${APPS[@]}"; do
+    print_info "Migrazioni per ${app}..."
+    sudo -u ${PROJECT_NAME} bash -c "cd ${PROJECT_PATH} && source venv/bin/activate && python manage.py makemigrations ${app}" || true
+done
 
 # Migrazioni database
 print_info "Esecuzione migrazioni database..."
