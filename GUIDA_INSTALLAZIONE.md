@@ -305,30 +305,150 @@ sudo chown talent:talent /opt/talent/db.sqlite3
 ## 📊 STRUTTURA FILE DOPO INSTALLAZIONE
 
 ```
-/opt/talent/
-├── venv/                    # Virtual environment Python
-├── dashboard_project/       # Configurazione Django
-├── procedures/              # App principale
-├── procedure_files/         # File .txt procedure
-├── staticfiles/            # File statici (CSS, JS)
-├── db.sqlite3              # Database SQLite
-├── .env                    # Configurazioni (SECRET_KEY, DEBUG, ecc.)
-├── manage.py
-└── requirements.txt
-
-/etc/nginx/sites-available/
-└── dashboard               # Configurazione Nginx
-
-/etc/systemd/system/
-└── gunicorn.service        # Service systemd
-
-/var/log/
-├── nginx/
-│   ├── dashboard_access.log
-│   └── dashboard_error.log
-└── dashboard/
-    ├── access.log          # Log Gunicorn
-    └── error.log
+talent-mosaic-django/
+│
+├── 📁 talent_mosaic/           # ⚙️ App principale Django (configurazione)
+│   ├── __init__.py
+│   ├── asgi.py                 # ASGI config per deploy asincrono
+│   ├── celery.py               # Configurazione Celery task queue
+│   ├── settings.py             # ⚙️ Configurazioni Django principali
+│   ├── urls.py                 # 🔗 URL routing principale
+│   └── wsgi.py                 # WSGI config per deploy produzione
+│
+├── 📁 accounts/                # 👤 Gestione utenti e profili
+│   ├── __init__.py
+│   ├── admin.py                # Configurazione admin Django
+│   ├── apps.py                 # Configurazione app
+│   ├── forms.py                # Form registrazione/login
+│   ├── models.py               # 📊 UserProfile model
+│   ├── urls.py                 # URL login/register/profile
+│   └── views.py                # View autenticazione
+│
+├── 📁 skills/                  # 🎯 Gestione competenze
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py                # Form aggiunta competenze
+│   ├── models.py               # 📊 Skill, SkillCategory, UserSkill
+│   ├── urls.py
+│   └── views.py                # Lista/aggiungi/modifica skill
+│
+├── 📁 matching/                # 🤝 Sistema matchmaking
+│   ├── __init__.py
+│   ├── apps.py
+│   ├── urls.py
+│   └── views.py                # Algoritmo matching basato su skill
+│
+├── 📁 mentorship/              # 👥 Programmi mentoring
+│   ├── __init__.py
+│   ├── apps.py
+│   ├── models.py               # 📊 Mentorship, MentorshipSession
+│   ├── urls.py
+│   └── views.py                # Gestione relazioni mentor-mentee
+│
+├── 📁 events/                  # 📅 Eventi e workshop
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py               # 📊 Event, EventRegistration
+│   ├── urls.py
+│   └── views.py                # Lista eventi, registrazione
+│
+├── 📁 challenges/              # 🏆 Challenge collaborative
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py               # 📊 Challenge, ChallengeParticipation
+│   ├── urls.py
+│   └── views.py                # Gestione challenge e partecipazione
+│
+├── 📁 badges/                  # 🏅 Sistema badge e riconoscimenti
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py               # 📊 Badge, UserBadge
+│   ├── urls.py
+│   └── views.py                # Assegnazione e visualizzazione badge
+│
+├── 📁 analytics/               # 📊 Analytics e metriche
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py               # Modelli per tracking
+│   ├── urls.py
+│   └── views.py                # Dashboard analytics
+│
+├── 📁 core/                    # 🏠 Pagine core (home, about)
+│   ├── __init__.py
+│   ├── apps.py
+│   ├── urls.py
+│   └── views.py                # Home, dashboard, about
+│
+├── 📁 api/                     # 🔌 REST API
+│   ├── __init__.py
+│   ├── apps.py
+│   └── urls.py                 # Endpoint API (DRF)
+│
+├── 📁 templates/               # 🎨 Template HTML
+│   ├── base.html               # Template base con navbar
+│   ├── 404.html                # Pagina errore 404
+│   ├── 500.html                # Pagina errore 500
+│   │
+│   ├── 📁 accounts/
+│   │   ├── login.html
+│   │   ├── register.html
+│   │   ├── profile.html
+│   │   └── profile_edit.html
+│   │
+│   ├── 📁 skills/
+│   │   ├── my_skills.html
+│   │   └── skill_list.html
+│   │
+│   ├── 📁 events/
+│   │   └── event_list.html
+│   │
+│   ├── 📁 challenges/
+│   │   └── challenge_list.html
+│   │
+│   ├── 📁 badges/
+│   │   ├── badge_list.html
+│   │   └── my_badges.html
+│   │
+│   ├── 📁 mentorship/
+│   │   └── mentorship_list.html
+│   │
+│   ├── 📁 matching/
+│   │   └── matches.html
+│   │
+│   ├── 📁 analytics/
+│   │   └── dashboard.html
+│   │
+│   └── 📁 core/
+│       ├── home.html
+│       ├── dashboard.html
+│       └── about.html
+│
+├── 📁 static/                  # 📦 File statici (CSS, JS, immagini)
+│   └── 📁 css/
+│       └── style.css           # CSS personalizzato
+│
+├── 📁 scripts/                 # 🛠️ Script utility
+│   ├── backup.sh               # Script backup database
+│   ├── deploy.sh               # Script deploy
+│   └── seed_data.py            # Popolamento database test
+│
+├── 📄 manage.py                # 🐍 Django management script
+├── 📄 requirements.txt         # 📦 Dipendenze Python
+├── 📄 gunicorn_config.py       # ⚙️ Configurazione Gunicorn
+│
+├── 📄 README.md                # 📖 Documentazione principale
+├── 📄 SCRIPTS_README.md        # 📖 Documentazione script
+│
+├── 🔧 activate.sh              # Script attivazione Linux/Mac
+├── 🔧 activate.bat             # Script attivazione Windows
+├── 🔧 setup.py                 # Script setup automatico
+├── 🔧 manage_production.sh     # Script gestione produzione
+└── 🔧 Makefile                 # Comandi make rapidi
 ```
 
 ---
