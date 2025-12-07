@@ -371,7 +371,7 @@ ExecStart=${PROJECT_PATH}/venv/bin/gunicorn \\
           --bind 127.0.0.1:8000 \\
           --access-logfile /var/log/${PROJECT_NAME}/access.log \\
           --error-logfile /var/log/${PROJECT_NAME}/error.log \\
-          dashboard_project.wsgi:application
+          talent_mosaic.wsgi:application
 
 Restart=on-failure
 RestartSec=5s
