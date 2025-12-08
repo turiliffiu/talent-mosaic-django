@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block title %}Le Mie Challenge - Talent Mosaic{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-trophy text-warning"></i> Le Mie Challenge</h2>
+            <p class="text-muted">Monitora i tuoi progressi</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'challenges:challenge_list' %}" class="btn btn-warning">
+                <i class="fas fa-plus-circle"></i> Cerca Challenge
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistiche -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.total }}</h3>
+                    <p class="mb-0">Totali</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.active }}</h3>
+                    <p class="mb-0">Attive</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.completed }}</h3>
+                    <p class="mb-0">Completate</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h3>{{ stats.total_points }}</h3>
+                    <p class="mb-0">Punti Totali</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Challenge Attive -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-fire"></i> Challenge Attive ({{ active_participations.count }})</h5>
+        </div>
+        <div class="card-body">
+            {% if active_participations %}
+            {% for participation in active_participations %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6>{{ participation.challenge.title }}</h6>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> Scade: {{ participation.challenge.end_date|date:"d M Y" }}
+                            </small>
+                        </div>
+                        <span class="badge bg-warning" style="font-size: 1rem;">
+                            <i class="fas fa-star"></i> {{ participation.points_earned }} / {{ participation.challenge.points }}
+                        </span>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Progresso</span>
+                            <span>{{ participation.progress_data.progress|default:0 }}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" style="width: {{ participation.progress_data.progress|default:0 }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Note -->
+                    {% if participation.progress_data.notes %}
+                    <p class="small text-muted mb-2">📝 {{ participation.progress_data.notes|truncatewords:20 }}</p>
+                    {% endif %}
+                    
+                    <!-- Azioni -->
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-primary" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#updateModal{{ participation.id }}">
+                            <i class="fas fa-edit"></i> Aggiorna Progresso
+                        </button>
+                        <button type="button" class="btn btn-outline-danger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#leaveModal{{ participation.id }}">
+                            <i class="fas fa-times"></i> Abbandona
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Aggiorna -->
+            <div class="modal fade" id="updateModal{{ participation.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Aggiorna Progresso</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="post" action="{% url 'challenges:challenge_update_progress' participation.id %}">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Punti Guadagnati</label>
+                                    <input type="number" name="points" class="form-control" 
+                                           value="{{ participation.points_earned }}"
+                                           min="0" max="{{ participation.challenge.points }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Progresso (%)</label>
+                                    <input type="number" name="progress" class="form-control" 
+                                           value="{{ participation.progress_data.progress|default:0 }}"
+                                           min="0" max="100">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Note</label>
+                                    <textarea name="notes" class="form-control" rows="3">{{ participation.progress_data.notes|default:"" }}</textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                                <button type="submit" class="btn btn-primary">Salva</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Abbandona -->
+            <div class="modal fade" id="leaveModal{{ participation.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">Conferma Abbandono</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="post" action="{% url 'challenges:challenge_leave' participation.id %}">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                                <p>Sei sicuro di voler abbandonare "<strong>{{ participation.challenge.title }}</strong>"?</p>
+                                <p class="text-muted small">Perderai tutti i progressi.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                                <button type="submit" class="btn btn-danger">Abbandona</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-center text-muted py-4">
+                Nessuna challenge attiva. <a href="{% url 'challenges:challenge_list' %}">Partecipa ora!</a>
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Challenge Completate -->
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-check-circle"></i> Challenge Completate ({{ completed_participations.count }})</h5>
+        </div>
+        <div class="card-body">
+            {% if completed_participations %}
+            <div class="list-group list-group-flush">
+                {% for participation in completed_participations|slice:":10" %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">{{ participation.challenge.title }}</h6>
+                            <small class="text-muted">
+                                Completata il {{ participation.completed_at|date:"d M Y" }}
+                            </small>
+                        </div>
+                        <span class="badge bg-success" style="font-size: 1rem;">
+                            <i class="fas fa-trophy"></i> {{ participation.points_earned }} punti
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-center text-muted py-4">Nessuna challenge completata ancora</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

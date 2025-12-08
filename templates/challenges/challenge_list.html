@@ -1,1 +1,210 @@
-{% extends "base.html" %}{% block content %}<h1>Challenge</h1>{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Challenge - Talent Mosaic{% endblock %}
+
+{% block extra_css %}
+<style>
+    .challenge-card {
+        transition: all 0.3s;
+        height: 100%;
+        position: relative;
+    }
+    .challenge-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    .challenge-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+    }
+    .points-badge {
+        font-size: 1.2rem;
+        padding: 10px 15px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        color: #333;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-trophy text-warning"></i> Challenge</h2>
+            <p class="text-muted">Partecipa alle sfide collaborative e guadagna punti</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if user.is_authenticated %}
+            <a href="{% url 'challenges:my_challenges' %}" class="btn btn-outline-warning">
+                <i class="fas fa-user-check"></i> Le Mie Challenge
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filtri -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" name="search" 
+                               placeholder="Cerca challenge..." 
+                               value="{{ search_query }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select name="status" class="form-select">
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>
+                            🔥 Attive
+                        </option>
+                        <option value="upcoming" {% if status_filter == 'upcoming' %}selected{% endif %}>
+                            📅 In Arrivo
+                        </option>
+                        <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>
+                            ✅ Completate
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-warning w-100">
+                        <i class="fas fa-filter"></i> Filtra
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista Challenge -->
+    {% if challenges %}
+    <div class="row">
+        {% for challenge in challenges %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card challenge-card">
+                <div class="card-body">
+                    
+                    <!-- Badge Status -->
+                    {% if challenge.status == 'active' %}
+                    <span class="badge bg-success challenge-badge">Attiva</span>
+                    {% elif challenge.status == 'upcoming' %}
+                    <span class="badge bg-info challenge-badge">In Arrivo</span>
+                    {% else %}
+                    <span class="badge bg-secondary challenge-badge">Completata</span>
+                    {% endif %}
+                    
+                    <!-- Titolo -->
+                    <h5 class="card-title mt-3">{{ challenge.title }}</h5>
+                    
+                    <!-- Descrizione -->
+                    <p class="card-text text-muted small mb-3">
+                        {{ challenge.description|truncatewords:20 }}
+                    </p>
+                    
+                    <!-- Info -->
+                    <div class="mb-3">
+                        <!-- Punti -->
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small text-muted">Punti Disponibili:</span>
+                            <span class="points-badge">
+                                <i class="fas fa-star"></i> {{ challenge.points }}
+                            </span>
+                        </div>
+                        
+                        <!-- Date -->
+                        <p class="mb-1 small">
+                            <i class="fas fa-calendar-alt text-primary"></i>
+                            {{ challenge.start_date|date:"d M Y" }} - {{ challenge.end_date|date:"d M Y" }}
+                        </p>
+                        
+                        <!-- Partecipanti -->
+                        <p class="mb-1 small">
+                            <i class="fas fa-users text-success"></i>
+                            {{ challenge.total_participants }} partecipanti
+                        </p>
+                        
+                        <!-- Tipo -->
+                        <p class="mb-0 small">
+                            <i class="fas fa-trophy text-info"></i>
+                            Challenge Collaborativa
+                        </p>
+                    </div>
+                    
+                    <!-- Azione -->
+                    {% if user.is_authenticated %}
+                        {% if challenge.id in user_participating_ids %}
+                            <button class="btn btn-success w-100" disabled>
+                                <i class="fas fa-check-circle"></i> Partecipante
+                            </button>
+                        {% elif challenge.status != 'active' %}
+                            <button class="btn btn-secondary w-100" disabled>
+                                Non Disponibile
+                            </button>
+                        {% else %}
+                            <form method="post" action="{% url 'challenges:challenge_participate' challenge.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-warning w-100">
+                                    <i class="fas fa-trophy"></i> Partecipa
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-sign-in-alt"></i> Login per Partecipare
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% else %}
+    
+    <!-- Nessuna challenge -->
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-trophy fa-5x text-muted mb-3"></i>
+            <h3>Nessuna challenge trovata</h3>
+            <p class="text-muted mb-4">
+                {% if search_query or status_filter != 'active' %}
+                    Prova a modificare i filtri di ricerca
+                {% else %}
+                    Al momento non ci sono challenge disponibili
+                {% endif %}
+            </p>
+            {% if search_query or status_filter != 'active' %}
+            <a href="{% url 'challenges:challenge_list' %}" class="btn btn-warning">
+                <i class="fas fa-trophy"></i> Vedi Tutte le Challenge
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.challenge-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+});
+</script>
+{% endblock %}
