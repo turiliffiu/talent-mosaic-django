@@ -1,1 +1,250 @@
-{% extends "base.html" %}{% block content %}<h1>Lista Competenze</h1>{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Esplora Competenze - Talent Mosaic{% endblock %}
+
+{% block extra_css %}
+<style>
+    .skill-card {
+        transition: all 0.3s;
+        cursor: pointer;
+        height: 100%;
+    }
+    .skill-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    .category-badge {
+        font-size: 0.75rem;
+        padding: 3px 10px;
+    }
+    .skill-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+    .add-btn {
+        transition: all 0.2s;
+    }
+    .add-btn:hover {
+        transform: scale(1.05);
+    }
+    .filter-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-brain text-primary"></i> Esplora Competenze</h2>
+            <p class="text-muted">Aggiungi nuove competenze al tuo profilo</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'skills:my_skills' %}" class="btn btn-outline-primary">
+                <i class="fas fa-user"></i> Le Mie Competenze
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtri e Ricerca -->
+    <div class="filter-section">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" name="search" 
+                           placeholder="Cerca competenza..." 
+                           value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="category" class="form-select">
+                    <option value="">Tutte le Categorie</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter"></i> Filtra
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Risultati -->
+    {% if search_query or selected_category %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        Trovate <strong>{{ skills.count }}</strong> competenze
+        {% if search_query %}
+            contenenti "<strong>{{ search_query }}</strong>"
+        {% endif %}
+        {% if selected_category %}
+            nella categoria selezionata
+        {% endif %}
+        <a href="{% url 'skills:skill_list' %}" class="alert-link ms-2">Rimuovi filtri</a>
+    </div>
+    {% endif %}
+
+    <!-- Lista Skills -->
+    {% if skills %}
+    <div class="row">
+        {% for skill in skills %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="card skill-card h-100">
+                <div class="card-body text-center">
+                    <!-- Icona Skill -->
+                    <div class="skill-icon mx-auto" style="background-color: {{ skill.category.color|default:'#3B82F6' }}20;">
+                        <i class="fas fa-{{ skill.category.icon|default:'lightbulb' }} fa-2x" 
+                           style="color: {{ skill.category.color|default:'#3B82F6' }};"></i>
+                    </div>
+                    
+                    <!-- Nome Skill -->
+                    <h5 class="card-title mb-2">{{ skill.name }}</h5>
+                    
+                    <!-- Categoria -->
+                    {% if skill.category %}
+                    <span class="badge category-badge mb-2" 
+                          style="background-color: {{ skill.category.color }};">
+                        {{ skill.category.name }}
+                    </span>
+                    {% endif %}
+                    
+                    <!-- Descrizione -->
+                    {% if skill.description %}
+                    <p class="card-text text-muted small">
+                        {{ skill.description|truncatewords:15 }}
+                    </p>
+                    {% endif %}
+                    
+                    <!-- Popolarità -->
+                    <p class="mb-3">
+                        <i class="fas fa-users text-muted"></i>
+                        <small class="text-muted">{{ skill.total_users }} utenti</small>
+                    </p>
+                    
+                    <!-- Bottone Aggiungi con Modal -->
+                    <button type="button" class="btn btn-primary add-btn w-100" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#addSkillModal{{ skill.id }}">
+                        <i class="fas fa-plus-circle"></i> Aggiungi
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal per aggiungere skill -->
+        <div class="modal fade" id="addSkillModal{{ skill.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-plus-circle text-primary"></i> 
+                            Aggiungi {{ skill.name }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form method="post" action="{% url 'skills:add_skill' skill.id %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <!-- Livello -->
+                            <div class="mb-3">
+                                <label class="form-label">Livello di Competenza</label>
+                                <select name="proficiency" class="form-select" required>
+                                    <option value="1">1 - Principiante</option>
+                                    <option value="2">2 - Base</option>
+                                    <option value="3" selected>3 - Intermedio</option>
+                                    <option value="4">4 - Avanzato</option>
+                                    <option value="5">5 - Esperto</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Anni Esperienza -->
+                            <div class="mb-3">
+                                <label class="form-label">Anni di Esperienza</label>
+                                <input type="number" name="years" class="form-control" 
+                                       min="0" max="50" step="0.5" value="1" required>
+                            </div>
+                            
+                            {% if skill.description %}
+                            <div class="alert alert-light">
+                                <strong>Descrizione:</strong><br>
+                                {{ skill.description }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Annulla
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i> Aggiungi Competenza
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Paginazione (se implementata in futuro) -->
+    {% if skills.count > 20 %}
+    <div class="text-center mt-4">
+        <p class="text-muted">Mostrando {{ skills.count }} competenze</p>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Nessun risultato -->
+    <div class="text-center py-5">
+        <i class="fas fa-search fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted">Nessuna competenza trovata</h4>
+        <p class="text-muted">
+            {% if search_query or selected_category %}
+                Prova a modificare i filtri di ricerca
+            {% else %}
+                Hai già aggiunto tutte le competenze disponibili!
+            {% endif %}
+        </p>
+        <a href="{% url 'skills:my_skills' %}" class="btn btn-primary mt-3">
+            <i class="fas fa-user"></i> Vedi Le Mie Competenze
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Animazione cards al caricamento
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.skill-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+});
+</script>
+{% endblock %}
