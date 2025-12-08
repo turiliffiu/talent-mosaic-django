@@ -1,1 +1,284 @@
-{% extends "base.html" %}{% block content %}<h1>Eventi</h1>{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Eventi - Talent Mosaic{% endblock %}
+
+{% block extra_css %}
+<style>
+    .event-card {
+        transition: all 0.3s;
+        height: 100%;
+    }
+    .event-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    .event-type-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 10;
+    }
+    .event-date {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        min-width: 80px;
+    }
+    .filter-pills .btn {
+        border-radius: 20px;
+        margin: 5px;
+    }
+    .event-full {
+        opacity: 0.7;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-calendar-alt text-success"></i> Eventi</h2>
+            <p class="text-muted">Esplora e iscriviti agli eventi disponibili</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if user.is_authenticated %}
+            <a href="{% url 'events:my_events' %}" class="btn btn-outline-success">
+                <i class="fas fa-user-check"></i> I Miei Eventi
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filtri -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <!-- Ricerca -->
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" name="search" 
+                               placeholder="Cerca evento..." 
+                               value="{{ search_query }}">
+                    </div>
+                </div>
+                
+                <!-- Filtro Temporale -->
+                <div class="col-md-3">
+                    <select name="time" class="form-select">
+                        <option value="upcoming" {% if time_filter == 'upcoming' %}selected{% endif %}>
+                            📅 Prossimi
+                        </option>
+                        <option value="past" {% if time_filter == 'past' %}selected{% endif %}>
+                            🕐 Passati
+                        </option>
+                        <option value="all" {% if time_filter == 'all' %}selected{% endif %}>
+                            📋 Tutti
+                        </option>
+                    </select>
+                </div>
+                
+                <!-- Filtro Tipo -->
+                <div class="col-md-3">
+                    <select name="type" class="form-select">
+                        <option value="">Tutti i Tipi</option>
+                        {% for type_code, type_name in event_types %}
+                        <option value="{{ type_code }}" {% if selected_type == type_code %}selected{% endif %}>
+                            {{ type_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-filter"></i> Filtra
+                    </button>
+                </div>
+            </form>
+            
+            {% if search_query or selected_type or time_filter != 'upcoming' %}
+            <div class="mt-3">
+                <a href="{% url 'events:event_list' %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-times"></i> Rimuovi Filtri
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Risultati -->
+    {% if search_query or selected_type %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        Trovati <strong>{{ events.count }}</strong> eventi
+    </div>
+    {% endif %}
+
+    <!-- Lista Eventi -->
+    {% if events %}
+    <div class="row">
+        {% for event in events %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card event-card {% if event.is_full %}event-full{% endif %}">
+                <div class="card-body position-relative">
+                    
+                    <!-- Badge Tipo -->
+                    <span class="badge bg-info event-type-badge">
+                        {{ event.get_event_type_display }}
+                    </span>
+                    
+                    <!-- Data -->
+                    <div class="event-date mb-3">
+                        <div style="font-size: 1.5rem; font-weight: bold;">
+                            {{ event.start_date|date:"d" }}
+                        </div>
+                        <div style="font-size: 0.9rem;">
+                            {{ event.start_date|date:"M Y" }}
+                        </div>
+                        <div style="font-size: 0.75rem; opacity: 0.8;">
+                            {{ event.start_date|date:"H:i" }}
+                        </div>
+                    </div>
+                    
+                    <!-- Titolo -->
+                    <h5 class="card-title mb-2">{{ event.title }}</h5>
+                    
+                    <!-- Organizzatore -->
+                    <p class="text-muted small mb-2">
+                        <i class="fas fa-user"></i> {{ event.organizer.get_full_name|default:event.organizer.username }}
+                    </p>
+                    
+                    <!-- Descrizione -->
+                    <p class="card-text text-muted small mb-3">
+                        {{ event.description|truncatewords:20 }}
+                    </p>
+                    
+                    <!-- Info -->
+                    <div class="mb-3">
+                        <!-- Location -->
+                        <p class="mb-1 small">
+                            <i class="fas fa-map-marker-alt text-success"></i>
+                            {% if event.is_online %}
+                                <span class="badge bg-success">Online</span>
+                            {% else %}
+                                {{ event.location }}
+                            {% endif %}
+                        </p>
+                        
+                        <!-- Partecipanti -->
+                        {% if event.max_participants %}
+                        <p class="mb-1 small">
+                            <i class="fas fa-users text-primary"></i>
+                            {{ event.registrations_count }} / {{ event.max_participants }} iscritti
+                            
+                            <!-- Progress bar -->
+                            <div class="progress mt-1" style="height: 5px;">
+                                <div class="progress-bar {% if event.is_full %}bg-danger{% else %}bg-success{% endif %}" 
+                                     style="width: {% widthratio event.registrations_count event.max_participants 100 %}%">
+                                </div>
+                            </div>
+                        </p>
+                        {% else %}
+                        <p class="mb-1 small">
+                            <i class="fas fa-users text-primary"></i>
+                            {{ event.registrations_count }} iscritti
+                        </p>
+                        {% endif %}
+                        
+                        <!-- Durata -->
+                        <p class="mb-0 small text-muted">
+                            <i class="fas fa-clock"></i>
+                            {% if event.start_date.date == event.end_date.date %}
+                                {{ event.start_date|date:"H:i" }} - {{ event.end_date|date:"H:i" }}
+                            {% else %}
+                                {{ event.start_date|date:"d/m H:i" }} - {{ event.end_date|date:"d/m H:i" }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <!-- Azione -->
+                    {% if user.is_authenticated %}
+                        {% if event.id in user_registered_ids %}
+                            <button class="btn btn-success w-100" disabled>
+                                <i class="fas fa-check-circle"></i> Iscritto
+                            </button>
+                        {% elif event.is_full %}
+                            <button class="btn btn-secondary w-100" disabled>
+                                <i class="fas fa-ban"></i> Completo
+                            </button>
+                        {% elif event.start_date < now %}
+                            <button class="btn btn-secondary w-100" disabled>
+                                <i class="fas fa-clock"></i> Evento Passato
+                            </button>
+                        {% else %}
+                            <form method="post" action="{% url 'events:event_register' event.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-calendar-plus"></i> Iscriviti
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-sign-in-alt"></i> Login per Iscriverti
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% else %}
+    
+    <!-- Nessun evento -->
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-calendar-times fa-5x text-muted mb-3"></i>
+            <h3>Nessun evento trovato</h3>
+            <p class="text-muted mb-4">
+                {% if search_query or selected_type %}
+                    Prova a modificare i filtri di ricerca
+                {% elif time_filter == 'past' %}
+                    Non ci sono eventi passati
+                {% else %}
+                    Al momento non ci sono eventi disponibili
+                {% endif %}
+            </p>
+            {% if search_query or selected_type or time_filter != 'upcoming' %}
+            <a href="{% url 'events:event_list' %}" class="btn btn-primary">
+                <i class="fas fa-calendar-alt"></i> Vedi Tutti gli Eventi
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Animazione cards
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.event-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+});
+</script>
+{% endblock %}

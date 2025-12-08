@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}I Miei Eventi - Talent Mosaic{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-calendar-check text-success"></i> I Miei Eventi</h2>
+            <p class="text-muted">Gestisci le tue iscrizioni</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'events:event_list' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Cerca Altri Eventi
+            </a>
+        </div>
+    </div>
+
+    <!-- Eventi Prossimi -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Prossimi Eventi ({{ upcoming_registrations.count }})</h5>
+        </div>
+        <div class="card-body">
+            {% if upcoming_registrations %}
+            <div class="list-group list-group-flush">
+                {% for registration in upcoming_registrations %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">{{ registration.event.title }}</h6>
+                        <p class="mb-1 small text-muted">
+                            <i class="fas fa-calendar"></i> {{ registration.event.start_date|date:"d M Y - H:i" }}
+                        </p>
+                        <p class="mb-0 small text-muted">
+                            <i class="fas fa-map-marker-alt"></i>
+                            {% if registration.event.is_online %}Online{% else %}{{ registration.event.location }}{% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <span class="badge bg-{{ registration.status }}-color me-2">{{ registration.get_status_display }}</span>
+                        <form method="post" action="{% url 'events:event_unregister' registration.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Annullare iscrizione?')">
+                                <i class="fas fa-times"></i> Annulla
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-center text-muted py-4">
+                Nessun evento in programma. <a href="{% url 'events:event_list' %}">Esplora eventi</a>
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Eventi Passati -->
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-history"></i> Eventi Passati ({{ past_registrations.count }})</h5>
+        </div>
+        <div class="card-body">
+            {% if past_registrations %}
+            <div class="list-group list-group-flush">
+                {% for registration in past_registrations|slice:":10" %}
+                <div class="list-group-item">
+                    <h6 class="mb-1">{{ registration.event.title }}</h6>
+                    <p class="mb-0 small text-muted">
+                        <i class="fas fa-calendar"></i> {{ registration.event.start_date|date:"d M Y" }}
+                        {% if registration.rating %}
+                        | <i class="fas fa-star text-warning"></i> {{ registration.rating }}/5
+                        {% endif %}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-center text-muted py-4">Nessun evento passato</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
