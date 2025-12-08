@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Le Mie Mentorship - Talent Mosaic{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-handshake text-danger"></i> Le Mie Mentorship</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'mentorship:mentorship_list' %}" class="btn btn-danger">
+                <i class="fas fa-search"></i> Trova Mentor
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.active_as_mentee }}</h3>
+                    <p class="mb-0">Mentor Attivi</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.active_as_mentor }}</h3>
+                    <p class="mb-0">Mentee Attivi</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Come Mentee -->
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="fas fa-user-graduate"></i> I Miei Mentor ({{ my_mentorships_mentee.count }})</h5>
+        </div>
+        <div class="card-body">
+            {% if my_mentorships_mentee %}
+            {% for mentorship in my_mentorships_mentee %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6>{{ mentorship.mentor.get_full_name }}</h6>
+                            <small class="text-muted">{{ mentorship.mentor.profile.job_title }}</small>
+                        </div>
+                        <div>
+                            {% if mentorship.status == 'pending' %}
+                            <span class="badge bg-warning">In Attesa</span>
+                            {% elif mentorship.status == 'active' %}
+                            <span class="badge bg-success">Attiva</span>
+                            <form method="post" action="{% url 'mentorship:end_mentorship' mentorship.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Concludere?')">Concludi</button>
+                            </form>
+                            {% elif mentorship.status == 'rejected' %}
+                            <span class="badge bg-danger">Rifiutata</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Completata</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-center text-muted py-3">Nessun mentor ancora. <a href="{% url 'mentorship:mentorship_list' %}">Trova un mentor</a></p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Come Mentor -->
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-user-tie"></i> I Miei Mentee ({{ my_mentorships_mentor.count }})</h5>
+        </div>
+        <div class="card-body">
+            {% if my_mentorships_mentor %}
+            {% for mentorship in my_mentorships_mentor %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6>{{ mentorship.mentee.get_full_name }}</h6>
+                            <small class="text-muted">Richiesta: {{ mentorship.created_at|date:"d M Y" }}</small>
+                        </div>
+                        <div>
+                            {% if mentorship.status == 'pending' %}
+                            <form method="post" action="{% url 'mentorship:accept_mentorship' mentorship.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success">Accetta</button>
+                            </form>
+                            <form method="post" action="{% url 'mentorship:reject_mentorship' mentorship.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger">Rifiuta</button>
+                            </form>
+                            {% elif mentorship.status == 'active' %}
+                            <span class="badge bg-success">Attiva</span>
+                            <form method="post" action="{% url 'mentorship:end_mentorship' mentorship.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Concludere?')">Concludi</button>
+                            </form>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ mentorship.get_status_display }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-center text-muted py-3">Nessuna richiesta ancora</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
