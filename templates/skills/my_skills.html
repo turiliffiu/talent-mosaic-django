@@ -54,56 +54,57 @@
         </div>
     </div>
 
-    <!-- Statistiche -->
+    {% if skills_by_category %}
+    
+    <!-- Statistics -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
             <div class="stat-box">
-                <h3 class="mb-0">{{ stats.total }}</h3>
+                <h3>{{ stats.total }}</h3>
                 <p class="mb-0">Competenze Totali</p>
             </div>
         </div>
         <div class="col-md-3 mb-3">
             <div class="stat-box" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <h3 class="mb-0">{{ stats.expert }}</h3>
+                <h3>{{ stats.expert }}</h3>
                 <p class="mb-0">Livello Esperto</p>
             </div>
         </div>
         <div class="col-md-3 mb-3">
             <div class="stat-box" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                <h3 class="mb-0">{{ stats.advanced }}</h3>
+                <h3>{{ stats.advanced }}</h3>
                 <p class="mb-0">Livello Avanzato</p>
             </div>
         </div>
         <div class="col-md-3 mb-3">
             <div class="stat-box" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-                <h3 class="mb-0">{{ stats.verified }}</h3>
+                <h3>{{ stats.verified }}</h3>
                 <p class="mb-0">Verificate</p>
             </div>
         </div>
     </div>
 
-    {% if user_skills %}
-    
-    <!-- Vista per Categoria -->
-    {% for category, skills in skills_by_category.items %}
+    <!-- Skills by Category -->
+    {% for category, user_skills in skills_by_category.items %}
     <div class="card mb-4">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <div class="card-header" style="background: {{ category.color|default:'#3B82F6' }}; color: white;">
             <h5 class="mb-0">
-                <i class="fas fa-folder-open"></i> {{ category }}
+                <i class="fas fa-{{ category.icon|default:'folder' }}"></i>
+                {{ category.name }}
+                <span class="badge bg-light text-dark float-end">{{ user_skills|length }}</span>
             </h5>
-            <span class="badge bg-light text-dark">{{ skills|length }} competenze</span>
         </div>
         <div class="card-body">
             <div class="row">
-                {% for user_skill in skills %}
-                <div class="col-md-6 mb-3">
-                    <div class="card skill-item h-100" style="border-left-color: {{ user_skill.skill.category.color|default:'#3B82F6' }};">
+                {% for user_skill in user_skills %}
+                <div class="col-lg-6 mb-3">
+                    <div class="card skill-item" style="border-left-color: {{ category.color|default:'#3B82F6' }};">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="d-flex justify-content-between mb-2">
                                 <div>
-                                    <h6 class="mb-0">{{ user_skill.skill.name }}</h6>
+                                    <h6 class="mb-1">{{ user_skill.skill.name }}</h6>
                                     <small class="text-muted">
-                                        {{ user_skill.years_experience }} anni esperienza
+                                        {{ user_skill.years_experience }} {% if user_skill.years_experience == 1 %}anno{% else %}anni{% endif %}
                                     </small>
                                 </div>
                                 <div>
@@ -113,111 +114,35 @@
                                 </div>
                             </div>
                             
-                            <!-- Livello -->
                             <div class="mb-2">
-                                <div class="d-flex justify-content-between small mb-1">
-                                    <span>{{ user_skill.get_proficiency_display }}</span>
-                                    <span class="text-muted">{{ user_skill.proficiency }}/5</span>
-                                </div>
+                                <small class="text-muted">{{ user_skill.get_proficiency_display }}</small>
                                 <div class="proficiency-bar">
                                     <div class="proficiency-fill level-{{ user_skill.proficiency }}" 
-                                         style="width: {{ user_skill.proficiency }}0%;">
-                                    </div>
+                                         style="width: {{ user_skill.proficiency }}0%;"></div>
                                 </div>
                             </div>
                             
-                            <!-- Note -->
                             {% if user_skill.notes %}
                             <p class="small text-muted mb-2">
-                                <i class="fas fa-sticky-note"></i> {{ user_skill.notes|truncatewords:10 }}
+                                <i class="fas fa-sticky-note"></i> {{ user_skill.notes|truncatewords:15 }}
                             </p>
                             {% endif %}
                             
-                            <!-- Azioni -->
-                            <div class="btn-group btn-group-sm w-100" role="group">
-                                <button type="button" class="btn btn-outline-primary" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#editModal{{ user_skill.id }}">
+                            <div class="btn-group btn-group-sm w-100">
+                                <button type="button" class="btn btn-outline-primary btn-edit-skill"
+                                        data-skill-id="{{ user_skill.id }}"
+                                        data-skill-name="{{ user_skill.skill.name }}"
+                                        data-proficiency="{{ user_skill.proficiency }}"
+                                        data-years="{{ user_skill.years_experience }}"
+                                        data-notes="{{ user_skill.notes|default:'' }}">
                                     <i class="fas fa-edit"></i> Modifica
                                 </button>
-                                <button type="button" class="btn btn-outline-danger"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#deleteModal{{ user_skill.id }}">
+                                <button type="button" class="btn btn-outline-danger btn-delete-skill"
+                                        data-skill-id="{{ user_skill.id }}"
+                                        data-skill-name="{{ user_skill.skill.name }}">
                                     <i class="fas fa-trash"></i> Rimuovi
                                 </button>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Modal Modifica -->
-                <div class="modal fade" id="editModal{{ user_skill.id }}" tabindex="-1">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">
-                                    <i class="fas fa-edit"></i> Modifica {{ user_skill.skill.name }}
-                                </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <form method="post" action="{% url 'skills:update_skill' user_skill.id %}">
-                                {% csrf_token %}
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label">Livello di Competenza</label>
-                                        <select name="proficiency" class="form-select" required>
-                                            <option value="1" {% if user_skill.proficiency == 1 %}selected{% endif %}>1 - Principiante</option>
-                                            <option value="2" {% if user_skill.proficiency == 2 %}selected{% endif %}>2 - Base</option>
-                                            <option value="3" {% if user_skill.proficiency == 3 %}selected{% endif %}>3 - Intermedio</option>
-                                            <option value="4" {% if user_skill.proficiency == 4 %}selected{% endif %}>4 - Avanzato</option>
-                                            <option value="5" {% if user_skill.proficiency == 5 %}selected{% endif %}>5 - Esperto</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Anni di Esperienza</label>
-                                        <input type="number" name="years" class="form-control" 
-                                               value="{{ user_skill.years_experience }}"
-                                               min="0" max="50" step="0.5" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Note (opzionale)</label>
-                                        <textarea name="notes" class="form-control" rows="3">{{ user_skill.notes }}</textarea>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save"></i> Salva Modifiche
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Modal Elimina -->
-                <div class="modal fade" id="deleteModal{{ user_skill.id }}" tabindex="-1">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header bg-danger text-white">
-                                <h5 class="modal-title">
-                                    <i class="fas fa-exclamation-triangle"></i> Conferma Rimozione
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                            </div>
-                            <form method="post" action="{% url 'skills:remove_skill' user_skill.id %}">
-                                {% csrf_token %}
-                                <div class="modal-body">
-                                    <p>Sei sicuro di voler rimuovere la competenza <strong>{{ user_skill.skill.name }}</strong>?</p>
-                                    <p class="text-muted small">Questa azione non può essere annullata.</p>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                                    <button type="submit" class="btn btn-danger">
-                                        <i class="fas fa-trash"></i> Rimuovi
-                                    </button>
-                                </div>
-                            </form>
                         </div>
                     </div>
                 </div>
@@ -228,36 +153,178 @@
     {% endfor %}
 
     {% else %}
-    
-    <!-- Stato Vuoto -->
     <div class="card">
         <div class="card-body text-center py-5">
             <i class="fas fa-brain fa-5x text-muted mb-3"></i>
             <h3>Nessuna competenza ancora</h3>
-            <p class="text-muted mb-4">Inizia ad aggiungere le tue competenze per valorizzare il tuo profilo</p>
-            <a href="{% url 'skills:skill_list' %}" class="btn btn-primary btn-lg">
-                <i class="fas fa-plus-circle"></i> Aggiungi Prima Competenza
+            <p class="text-muted">Inizia ad aggiungere le tue competenze</p>
+            <a href="{% url 'skills:skill_list' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Aggiungi Competenza
             </a>
         </div>
     </div>
-    
     {% endif %}
 
 </div>
+
+<!-- MODAL EDIT (SINGOLO) -->
+<div class="modal fade" id="editSkillModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit"></i> Modifica <span id="editSkillName"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" id="editSkillForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Livello di Competenza</label>
+                        <select name="proficiency" id="editProficiency" class="form-select" required>
+                            <option value="1">1 - Principiante</option>
+                            <option value="2">2 - Base</option>
+                            <option value="3">3 - Intermedio</option>
+                            <option value="4">4 - Avanzato</option>
+                            <option value="5">5 - Esperto</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Anni di Esperienza</label>
+                        <input type="number" name="years" id="editYears" class="form-control" 
+                               min="0" max="50" step="0.5" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Note (opzionale)</label>
+                        <textarea name="notes" id="editNotes" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salva
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DELETE (SINGOLO) -->
+<div class="modal fade" id="deleteSkillModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Conferma Rimozione
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" id="deleteSkillForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Sei sicuro di voler rimuovere <strong id="deleteSkillName"></strong>?</p>
+                    <p class="text-muted small">Questa azione non può essere annullata.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Rimuovi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Animazione barre progresso
 document.addEventListener('DOMContentLoaded', function() {
-    const bars = document.querySelectorAll('.proficiency-fill');
-    bars.forEach(bar => {
-        const width = bar.style.width;
-        bar.style.width = '0%';
-        setTimeout(() => {
-            bar.style.width = width;
-        }, 100);
+    console.log('✅ Script caricato');
+    
+    // Verifica Bootstrap
+    if (typeof bootstrap === 'undefined') {
+        console.error('❌ Bootstrap non caricato');
+        return;
+    }
+    
+    // EDIT MODAL
+    var editButtons = document.querySelectorAll('.btn-edit-skill');
+    console.log('✅ Trovati', editButtons.length, 'bottoni edit');
+    
+    var editModalEl = document.getElementById('editSkillModal');
+    var editForm = document.getElementById('editSkillForm');
+    
+    if (editModalEl && editForm && editButtons.length > 0) {
+        var editModal = new bootstrap.Modal(editModalEl);
+        
+        editButtons.forEach(function(btn, index) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('✅ Click su bottone #' + index);
+                
+                var skillId = this.getAttribute('data-skill-id');
+                var skillName = this.getAttribute('data-skill-name');
+                var proficiency = this.getAttribute('data-proficiency');
+                var years = this.getAttribute('data-years');
+                var notes = this.getAttribute('data-notes');
+                
+                document.getElementById('editSkillName').textContent = skillName;
+                document.getElementById('editProficiency').value = proficiency;
+                document.getElementById('editYears').value = years;
+                document.getElementById('editNotes').value = notes || '';
+                
+                editForm.action = '/skills/update/' + skillId + '/';
+                
+                editModal.show();
+                console.log('✅ Modal mostrato per:', skillName);
+            });
+        });
+        
+        console.log('✅ Listener edit attaccati');
+    }
+    
+    // DELETE MODAL
+    var deleteButtons = document.querySelectorAll('.btn-delete-skill');
+    console.log('✅ Trovati', deleteButtons.length, 'bottoni delete');
+    
+    var deleteModalEl = document.getElementById('deleteSkillModal');
+    var deleteForm = document.getElementById('deleteSkillForm');
+    
+    if (deleteModalEl && deleteForm && deleteButtons.length > 0) {
+        var deleteModal = new bootstrap.Modal(deleteModalEl);
+        
+        deleteButtons.forEach(function(btn, index) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('✅ Click su delete #' + index);
+                
+                var skillId = this.getAttribute('data-skill-id');
+                var skillName = this.getAttribute('data-skill-name');
+                
+                document.getElementById('deleteSkillName').textContent = skillName;
+                deleteForm.action = '/skills/remove/' + skillId + '/';
+                
+                deleteModal.show();
+                console.log('✅ Modal delete mostrato per:', skillName);
+            });
+        });
+        
+        console.log('✅ Listener delete attaccati');
+    }
+    
+    // Progress bar animation
+    var bars = document.querySelectorAll('.proficiency-fill');
+    bars.forEach(function(bar, i) {
+        setTimeout(function() {
+            bar.style.width = bar.style.width;
+        }, i * 50);
     });
+    
+    console.log('✅ Setup completato!');
 });
 </script>
 {% endblock %}
