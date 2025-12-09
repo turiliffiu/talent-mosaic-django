@@ -56,113 +56,57 @@
     <!-- Challenge Attive -->
     <div class="card mb-4">
         <div class="card-header bg-success text-white">
-            <h5 class="mb-0"><i class="fas fa-fire"></i> Challenge Attive ({{ active_participations.count }})</h5>
+            <h5 class="mb-0"><i class="fas fa-running"></i> Challenge Attive ({{ active_participations.count }})</h5>
         </div>
         <div class="card-body">
             {% if active_participations %}
             {% for participation in active_participations %}
             <div class="card mb-3">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
-                            <h6>{{ participation.challenge.title }}</h6>
+                            <h5>{{ participation.challenge.title }}</h5>
+                            <p class="text-muted mb-2">{{ participation.challenge.description|truncatewords:20 }}</p>
                             <small class="text-muted">
-                                <i class="fas fa-calendar"></i> Scade: {{ participation.challenge.end_date|date:"d M Y" }}
+                                Categoria: {{ participation.challenge.category.name }}
                             </small>
                         </div>
-                        <span class="badge bg-warning" style="font-size: 1rem;">
-                            <i class="fas fa-star"></i> {{ participation.points_earned }} / {{ participation.challenge.points }}
+                        <span class="badge bg-warning text-dark" style="font-size: 1rem;">
+                            <i class="fas fa-trophy"></i> {{ participation.challenge.points }} punti
                         </span>
                     </div>
                     
-                    <!-- Progress Bar -->
-                    <div class="mb-2">
-                        <div class="d-flex justify-content-between small mb-1">
-                            <span>Progresso</span>
-                            <span>{{ participation.progress_data.progress|default:0 }}%</span>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small>Progresso: {{ participation.progress_data.progress|default:0 }}%</small>
+                            <small>Punti: {{ participation.points_earned }}/{{ participation.challenge.points }}</small>
                         </div>
-                        <div class="progress">
-                            <div class="progress-bar bg-warning" style="width: {{ participation.progress_data.progress|default:0 }}%"></div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ participation.progress_data.progress|default:0 }}%">
+                                {{ participation.progress_data.progress|default:0 }}%
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- Note -->
-                    {% if participation.progress_data.notes %}
-                    <p class="small text-muted mb-2">📝 {{ participation.progress_data.notes|truncatewords:20 }}</p>
-                    {% endif %}
-                    
-                    <!-- Azioni -->
-                    <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-outline-primary" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#updateModal{{ participation.id }}">
-                            <i class="fas fa-edit"></i> Aggiorna Progresso
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar"></i> Iniziata: {{ participation.joined_at|date:"d M Y" }}
+                        </small>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-update-progress"
+                                data-participation-id="{{ participation.id }}"
+                                data-challenge-title="{{ participation.challenge.title }}"
+                                data-points="{{ participation.points_earned }}"
+                                data-max-points="{{ participation.challenge.points }}"
+                                data-progress="{{ participation.progress_data.progress|default:0 }}"
+                                data-notes="{{ participation.progress_data.notes|default:'' }}">
+                            <i class="fas fa-edit"></i> Aggiorna
                         </button>
-                        <button type="button" class="btn btn-outline-danger"
-                                data-bs-toggle="modal"
-                                data-bs-target="#leaveModal{{ participation.id }}">
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-leave-challenge"
+                                data-participation-id="{{ participation.id }}"
+                                data-challenge-title="{{ participation.challenge.title }}">
                             <i class="fas fa-times"></i> Abbandona
                         </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal Aggiorna -->
-            <div class="modal fade" id="updateModal{{ participation.id }}" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Aggiorna Progresso</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <form method="post" action="{% url 'challenges:challenge_update_progress' participation.id %}">
-                            {% csrf_token %}
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label class="form-label">Punti Guadagnati</label>
-                                    <input type="number" name="points" class="form-control" 
-                                           value="{{ participation.points_earned }}"
-                                           min="0" max="{{ participation.challenge.points }}">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Progresso (%)</label>
-                                    <input type="number" name="progress" class="form-control" 
-                                           value="{{ participation.progress_data.progress|default:0 }}"
-                                           min="0" max="100">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Note</label>
-                                    <textarea name="notes" class="form-control" rows="3">{{ participation.progress_data.notes|default:"" }}</textarea>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                                <button type="submit" class="btn btn-primary">Salva</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal Abbandona -->
-            <div class="modal fade" id="leaveModal{{ participation.id }}" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header bg-danger text-white">
-                            <h5 class="modal-title">Conferma Abbandono</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <form method="post" action="{% url 'challenges:challenge_leave' participation.id %}">
-                            {% csrf_token %}
-                            <div class="modal-body">
-                                <p>Sei sicuro di voler abbandonare "<strong>{{ participation.challenge.title }}</strong>"?</p>
-                                <p class="text-muted small">Perderai tutti i progressi.</p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                                <button type="submit" class="btn btn-danger">Abbandona</button>
-                            </div>
-                        </form>
                     </div>
                 </div>
             </div>
@@ -206,4 +150,152 @@
     </div>
 
 </div>
+
+<!-- MODAL AGGIORNA PROGRESSO (SINGOLO) -->
+<div class="modal fade" id="updateProgressModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Aggiorna Progresso: <span id="updateChallengeTitle"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" id="updateProgressForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Punti Guadagnati</label>
+                        <input type="number" name="points" id="updatePoints" class="form-control" 
+                               min="0" required>
+                        <small class="text-muted">Max: <span id="updateMaxPoints"></span> punti</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Progresso (%)</label>
+                        <input type="number" name="progress" id="updateProgress" class="form-control" 
+                               min="0" max="100" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Note</label>
+                        <textarea name="notes" id="updateNotes" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ABBANDONA (SINGOLO) -->
+<div class="modal fade" id="leaveChallengeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Conferma Abbandono
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" id="leaveChallengeForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Sei sicuro di voler abbandonare "<strong id="leaveChallengeTitle"></strong>"?</p>
+                    <p class="text-muted small">Perderai tutti i progressi.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-danger">Abbandona</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Challenges script caricato');
+    
+    // Verifica Bootstrap
+    if (typeof bootstrap === 'undefined') {
+        console.error('❌ Bootstrap non caricato');
+        return;
+    }
+    
+    // UPDATE PROGRESS MODAL
+    var updateButtons = document.querySelectorAll('.btn-update-progress');
+    console.log('✅ Trovati', updateButtons.length, 'bottoni aggiorna');
+    
+    var updateModalEl = document.getElementById('updateProgressModal');
+    var updateForm = document.getElementById('updateProgressForm');
+    
+    if (updateModalEl && updateForm && updateButtons.length > 0) {
+        var updateModal = new bootstrap.Modal(updateModalEl);
+        
+        updateButtons.forEach(function(btn, index) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('✅ Click aggiorna #' + index);
+                
+                var participationId = this.getAttribute('data-participation-id');
+                var title = this.getAttribute('data-challenge-title');
+                var points = this.getAttribute('data-points');
+                var maxPoints = this.getAttribute('data-max-points');
+                var progress = this.getAttribute('data-progress');
+                var notes = this.getAttribute('data-notes');
+                
+                document.getElementById('updateChallengeTitle').textContent = title;
+                document.getElementById('updatePoints').value = points;
+                document.getElementById('updatePoints').max = maxPoints;
+                document.getElementById('updateMaxPoints').textContent = maxPoints;
+                document.getElementById('updateProgress').value = progress;
+                document.getElementById('updateNotes').value = notes || '';
+                
+                updateForm.action = '/challenges/update-progress/' + participationId + '/';
+                
+                updateModal.show();
+                console.log('✅ Modal aggiorna mostrato per:', title);
+            });
+        });
+        
+        console.log('✅ Listener aggiorna attaccati');
+    }
+    
+    // LEAVE CHALLENGE MODAL
+    var leaveButtons = document.querySelectorAll('.btn-leave-challenge');
+    console.log('✅ Trovati', leaveButtons.length, 'bottoni abbandona');
+    
+    var leaveModalEl = document.getElementById('leaveChallengeModal');
+    var leaveForm = document.getElementById('leaveChallengeForm');
+    
+    if (leaveModalEl && leaveForm && leaveButtons.length > 0) {
+        var leaveModal = new bootstrap.Modal(leaveModalEl);
+        
+        leaveButtons.forEach(function(btn, index) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('✅ Click abbandona #' + index);
+                
+                var participationId = this.getAttribute('data-participation-id');
+                var title = this.getAttribute('data-challenge-title');
+                
+                document.getElementById('leaveChallengeTitle').textContent = title;
+                leaveForm.action = '/challenges/leave/' + participationId + '/';
+                
+                leaveModal.show();
+                console.log('✅ Modal abbandona mostrato per:', title);
+            });
+        });
+        
+        console.log('✅ Listener abbandona attaccati');
+    }
+    
+    console.log('✅ Challenges setup completato!');
+});
+</script>
 {% endblock %}
