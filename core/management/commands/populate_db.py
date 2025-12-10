@@ -1,6 +1,8 @@
 """
 Management command per popolare il database con dati di esempio realistici
 Uso: python manage.py populate_db [--flush]
+
+VERSIONE 2.0 - Include Projects e Analytics
 """
 
 from django.core.management.base import BaseCommand
@@ -15,10 +17,15 @@ from events.models import Event, EventRegistration
 from mentorship.models import Mentorship, MentorshipSession
 from challenges.models import Challenge, ChallengeParticipation
 from badges.models import Badge, UserBadge
+from projects.models import (
+    Project, ProjectRequiredSkill, ProjectRole, TeamMember, 
+    AIMatchingRun, AdminAction
+)
+from analytics.models import ActivityLog
 
 
 class Command(BaseCommand):
-    help = 'Popola il database con dati di esempio per demo'
+    help = 'Popola il database con dati di esempio per demo (include Projects e Analytics)'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -28,7 +35,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS('🎯 TALENT MOSAIC - Popolamento Database Demo'))
+        self.stdout.write(self.style.SUCCESS('🎯 TALENT MOSAIC - Popolamento Database Demo v2.0'))
         self.stdout.write('=' * 70)
         
         if options['flush']:
@@ -51,12 +58,33 @@ class Command(BaseCommand):
         self.create_challenges()
         self.create_challenge_participations()
         
+        # NUOVE SEZIONI
+        self.create_projects()
+        self.create_project_skills()
+        self.create_project_roles()
+        self.create_team_members()
+        self.create_ai_matching_runs()
+        self.create_admin_actions()
+        self.create_analytics_data()
+        
         self.stdout.write(self.style.SUCCESS('\n' + '=' * 70))
         self.stdout.write(self.style.SUCCESS('✅ Popolamento completato con successo!'))
         self.print_summary()
 
     def flush_data(self):
         """Elimina tutti i dati (esclusi superuser)"""
+        # Analytics
+        ActivityLog.objects.all().delete()
+        
+        # Projects
+        AdminAction.objects.all().delete()
+        AIMatchingRun.objects.all().delete()
+        TeamMember.objects.all().delete()
+        ProjectRole.objects.all().delete()
+        ProjectRequiredSkill.objects.all().delete()
+        Project.objects.all().delete()
+        
+        # Existing data
         UserBadge.objects.all().delete()
         Badge.objects.all().delete()
         ChallengeParticipation.objects.all().delete()
@@ -165,10 +193,11 @@ class Command(BaseCommand):
                 'first_name': 'Mario',
                 'last_name': 'Rossi',
                 'email': 'mario.rossi@fibercop.it',
+                'is_staff': True,  # Admin
                 'profile': {
                     'job_title': 'Senior Software Engineer',
                     'department': 'IT Development',
-                    'bio': 'Appassionato di tecnologia con 10 anni di esperienza nello sviluppo software. Mi piace condividere conoscenze e fare mentoring.',
+                    'bio': 'Appassionato di tecnologia con 10 anni di esperienza nello sviluppo software.',
                     'location': 'Milano, Italia',
                     'is_mentor': True,
                     'is_mentee': False,
@@ -182,10 +211,10 @@ class Command(BaseCommand):
                 'profile': {
                     'job_title': 'UX/UI Designer',
                     'department': 'Design',
-                    'bio': 'Designer creativa con passione per la user experience. Cerco sempre di creare interfacce intuitive e belle.',
+                    'bio': 'Designer con passione per user experience e accessibilità.',
                     'location': 'Roma, Italia',
                     'is_mentor': True,
-                    'is_mentee': True,
+                    'is_mentee': False,
                 }
             },
             {
@@ -196,8 +225,8 @@ class Command(BaseCommand):
                 'profile': {
                     'job_title': 'Junior Developer',
                     'department': 'IT Development',
-                    'bio': 'Giovane sviluppatore in crescita. Entusiasta di imparare nuove tecnologie e best practices.',
-                    'location': 'Torino, Italia',
+                    'bio': 'Giovane sviluppatore entusiasta di imparare nuove tecnologie.',
+                    'location': 'Milano, Italia',
                     'is_mentor': False,
                     'is_mentee': True,
                 }
@@ -207,11 +236,40 @@ class Command(BaseCommand):
                 'first_name': 'Anna',
                 'last_name': 'Neri',
                 'email': 'anna.neri@fibercop.it',
+                'is_staff': True,  # Admin
                 'profile': {
                     'job_title': 'Marketing Manager',
                     'department': 'Marketing',
-                    'bio': 'Esperta di marketing digitale e strategie di comunicazione. Sempre alla ricerca di nuove opportunità di crescita.',
-                    'location': 'Milano, Italia',
+                    'bio': 'Esperta in digital marketing e social media strategy.',
+                    'location': 'Torino, Italia',
+                    'is_mentor': True,
+                    'is_mentee': False,
+                }
+            },
+            {
+                'username': 'marco.ricci',
+                'first_name': 'Marco',
+                'last_name': 'Ricci',
+                'email': 'marco.ricci@fibercop.it',
+                'profile': {
+                    'job_title': 'Data Analyst',
+                    'department': 'Data Science',
+                    'bio': 'Analista dati con forte interesse per machine learning.',
+                    'location': 'Bologna, Italia',
+                    'is_mentor': False,
+                    'is_mentee': True,
+                }
+            },
+            {
+                'username': 'sara.ferrari',
+                'first_name': 'Sara',
+                'last_name': 'Ferrari',
+                'email': 'sara.ferrari@fibercop.it',
+                'profile': {
+                    'job_title': 'Project Manager',
+                    'department': 'Operations',
+                    'bio': 'Project manager con certificazione PMP e esperienza in Agile.',
+                    'location': 'Napoli, Italia',
                     'is_mentor': True,
                     'is_mentee': False,
                 }
@@ -223,39 +281,11 @@ class Command(BaseCommand):
                 'email': 'francesco.russo@fibercop.it',
                 'profile': {
                     'job_title': 'Data Scientist',
-                    'department': 'Data Analytics',
-                    'bio': 'Data scientist con background in statistica e machine learning. Mi piace trovare insight dai dati.',
-                    'location': 'Bologna, Italia',
-                    'is_mentor': True,
-                    'is_mentee': True,
-                }
-            },
-            {
-                'username': 'sara.ferrari',
-                'first_name': 'Sara',
-                'last_name': 'Ferrari',
-                'email': 'sara.ferrari@fibercop.it',
-                'profile': {
-                    'job_title': 'Project Manager',
-                    'department': 'PMO',
-                    'bio': 'Project manager certificata PMP. Esperta nella gestione di progetti complessi e team distribuiti.',
-                    'location': 'Firenze, Italia',
+                    'department': 'Data Science',
+                    'bio': 'Data scientist specializzato in deep learning e NLP.',
+                    'location': 'Milano, Italia',
                     'is_mentor': True,
                     'is_mentee': False,
-                }
-            },
-            {
-                'username': 'davide.esposito',
-                'first_name': 'Davide',
-                'last_name': 'Esposito',
-                'email': 'davide.esposito@fibercop.it',
-                'profile': {
-                    'job_title': 'DevOps Engineer',
-                    'department': 'IT Operations',
-                    'bio': 'Esperto in cloud infrastructure e automazione. Appassionato di container e CI/CD.',
-                    'location': 'Napoli, Italia',
-                    'is_mentor': True,
-                    'is_mentee': True,
                 }
             },
             {
@@ -264,105 +294,109 @@ class Command(BaseCommand):
                 'last_name': 'Conti',
                 'email': 'elena.conti@fibercop.it',
                 'profile': {
-                    'job_title': 'Content Specialist',
+                    'job_title': 'Content Creator',
                     'department': 'Marketing',
-                    'bio': 'Creatrice di contenuti digitali con focus su storytelling e brand communication.',
-                    'location': 'Palermo, Italia',
+                    'bio': 'Content creator con passione per storytelling e video.',
+                    'location': 'Roma, Italia',
                     'is_mentor': False,
                     'is_mentee': True,
                 }
             },
             {
-                'username': 'marco.ricci',
-                'first_name': 'Marco',
-                'last_name': 'Ricci',
-                'email': 'marco.ricci@fibercop.it',
+                'username': 'alessandro.bruno',
+                'first_name': 'Alessandro',
+                'last_name': 'Bruno',
+                'email': 'alessandro.bruno@fibercop.it',
                 'profile': {
-                    'job_title': 'Business Analyst',
-                    'department': 'Strategy',
-                    'bio': 'Business analyst con esperienza in digital transformation e process optimization.',
-                    'location': 'Genova, Italia',
+                    'job_title': 'DevOps Engineer',
+                    'department': 'IT Operations',
+                    'bio': 'DevOps engineer con expertise in containerizzazione e cloud.',
+                    'location': 'Firenze, Italia',
                     'is_mentor': True,
-                    'is_mentee': True,
+                    'is_mentee': False,
                 }
             },
             {
-                'username': 'chiara.lombardi',
+                'username': 'chiara.moretti',
                 'first_name': 'Chiara',
-                'last_name': 'Lombardi',
-                'email': 'chiara.lombardi@fibercop.it',
+                'last_name': 'Moretti',
+                'email': 'chiara.moretti@fibercop.it',
                 'profile': {
-                    'job_title': 'HR Specialist',
-                    'department': 'Human Resources',
-                    'bio': 'Specialista HR con focus su talent development e diversity & inclusion.',
-                    'location': 'Milano, Italia',
-                    'is_mentor': True,
-                    'is_mentee': False,
+                    'job_title': 'Backend Developer',
+                    'department': 'IT Development',
+                    'bio': 'Backend developer specializzata in API design e microservizi.',
+                    'location': 'Genova, Italia',
+                    'is_mentor': False,
+                    'is_mentee': True,
                 }
             },
         ]
         
         count = 0
         for user_data in users_data:
+            profile_data = user_data.pop('profile')
+            is_staff = user_data.pop('is_staff', False)
+            
             user, created = User.objects.get_or_create(
                 username=user_data['username'],
                 defaults={
-                    'first_name': user_data['first_name'],
-                    'last_name': user_data['last_name'],
-                    'email': user_data['email'],
+                    **user_data,
+                    'is_staff': is_staff,
                 }
             )
             
             if created:
-                user.set_password('demo123')  # Password uguale per tutti in demo
+                user.set_password('demo123')
                 user.save()
-                
-                # Aggiorna profilo
-                profile = user.profile
-                for key, value in user_data['profile'].items():
+                count += 1
+            
+            # Crea o aggiorna UserProfile (get_or_create invece di create)
+            profile, profile_created = UserProfile.objects.get_or_create(
+                user=user,
+                defaults=profile_data
+            )
+            
+            # Se il profilo esiste già, aggiorna i campi
+            if not profile_created:
+                for key, value in profile_data.items():
                     setattr(profile, key, value)
                 profile.save()
-                
-                count += 1
         
         self.stdout.write(f'  ✓ {count} utenti creati (password: demo123)')
 
     def create_user_skills(self):
-        """Associa competenze agli utenti"""
-        self.stdout.write('🎯 Associazione Competenze Utenti...')
+        """Assegna competenze agli utenti"""
+        self.stdout.write('🎯 Competenze Utente...')
         
-        # Mappatura utenti -> competenze (realistico basato sul ruolo)
-        user_skills_map = {
-            'mario.rossi': ['Python', 'Django', 'JavaScript', 'React', 'PostgreSQL', 'Docker', 'Git'],
-            'giulia.bianchi': ['UI/UX Design', 'Figma', 'Adobe Photoshop', 'Graphic Design', 'Branding'],
+        user_skills_mapping = {
+            'mario.rossi': ['Python', 'Django', 'JavaScript', 'React', 'Docker', 'Git', 'PostgreSQL'],
+            'giulia.bianchi': ['UI/UX Design', 'Figma', 'Adobe Illustrator', 'Graphic Design', 'Branding'],
             'luca.verdi': ['Python', 'JavaScript', 'Git', 'SQL'],
-            'anna.neri': ['Content Marketing', 'SEO', 'Social Media Marketing', 'Copywriting'],
-            'francesco.russo': ['Python for Data Science', 'Machine Learning', 'Statistics', 'SQL for Analytics', 'Tableau'],
-            'sara.ferrari': ['Project Management', 'Agile', 'Scrum', 'Stakeholder Management', 'Team Leadership'],
-            'davide.esposito': ['Docker', 'Kubernetes', 'AWS', 'CI/CD', 'Python', 'Git'],
-            'elena.conti': ['Copywriting', 'Content Marketing', 'Social Media Marketing', 'Public Speaking'],
-            'marco.ricci': ['Data Analysis', 'Excel', 'SQL', 'Strategic Planning', 'Problem Solving'],
-            'chiara.lombardi': ['People Management', 'Coaching', 'Public Speaking', 'Conflict Resolution', 'Empatia'],
+            'anna.neri': ['Content Marketing', 'SEO', 'Social Media Marketing', 'Copywriting', 'Digital Strategy'],
+            'marco.ricci': ['Python for Data Science', 'SQL for Analytics', 'Excel', 'Tableau', 'Data Analysis'],
+            'sara.ferrari': ['Project Management', 'Agile', 'Scrum', 'Team Leadership', 'Risk Management'],
+            'francesco.russo': ['Machine Learning', 'Deep Learning', 'Python', 'Statistics', 'Data Visualization'],
+            'elena.conti': ['Content Marketing', 'Video Editing', 'Social Media Marketing', 'Copywriting'],
+            'alessandro.bruno': ['Docker', 'Kubernetes', 'AWS', 'CI/CD', 'Git', 'Python'],
+            'chiara.moretti': ['Python', 'Django', 'FastAPI', 'PostgreSQL', 'MongoDB', 'Git'],
         }
         
         count = 0
-        for username, skills_list in user_skills_map.items():
+        for username, skill_names in user_skills_mapping.items():
             try:
                 user = User.objects.get(username=username)
-                for skill_name in skills_list:
+                for skill_name in skill_names:
                     try:
                         skill = Skill.objects.get(name=skill_name)
-                        # Proficiency random tra 2 e 5 (più realistico)
-                        proficiency = random.randint(2, 5)
-                        years = round(random.uniform(0.5, 10.0), 1)
+                        proficiency = random.randint(3, 5)
                         
                         user_skill, created = UserSkill.objects.get_or_create(
                             user=user,
                             skill=skill,
                             defaults={
                                 'proficiency': proficiency,
-                                'years_experience': years,
-                                'verified': random.choice([True, False]),
+                                'years_experience': random.randint(1, 10),
+                                'verified': random.choice([True, True, False]),
                             }
                         )
                         if created:
@@ -372,75 +406,75 @@ class Command(BaseCommand):
             except User.DoesNotExist:
                 pass
         
-        self.stdout.write(f'  ✓ {count} associazioni create')
+        self.stdout.write(f'  ✓ {count} competenze-utente create')
 
     def create_badges(self):
-        """Crea badge del sistema"""
+        """Crea badge di achievement"""
         self.stdout.write('🏅 Badge...')
         
         badges_data = [
             {
-                'name': 'Primo Passo',
-                'description': 'Completa il tuo profilo per la prima volta',
-                'rarity': 'common',
-                'points': 10,
+                'name': 'Mentor Expert',
+                'description': 'Ha guidato con successo 5+ mentee',
+                'icon': 'badges/mentor_expert.png',  # Path fittizio
                 'color': '#10B981',
-            },
-            {
-                'name': 'Esperto di Competenze',
-                'description': 'Aggiungi almeno 5 competenze al tuo profilo',
-                'rarity': 'uncommon',
-                'points': 25,
-                'color': '#3B82F6',
-            },
-            {
-                'name': 'Mentor Dedicato',
-                'description': 'Completa 3 sessioni di mentorship',
                 'rarity': 'rare',
-                'points': 50,
-                'color': '#F59E0B',
+                'points': 100,
+                'criteria': {'mentees_count': 5},
+                'auto_award': True,
+            },
+            {
+                'name': 'Skill Master',
+                'description': 'Ha acquisito 10+ competenze verificate',
+                'icon': 'badges/skill_master.png',
+                'color': '#3B82F6',
+                'rarity': 'epic',
+                'points': 150,
+                'criteria': {'verified_skills': 10},
+                'auto_award': True,
             },
             {
                 'name': 'Team Player',
-                'description': 'Partecipa a 5 eventi aziendali',
-                'rarity': 'uncommon',
-                'points': 30,
-                'color': '#06B6D4',
-            },
-            {
-                'name': 'Innovatore',
-                'description': 'Completa una challenge sulla diversità',
-                'rarity': 'rare',
-                'points': 75,
+                'description': 'Ha collaborato a 5+ progetti di squadra',
+                'icon': 'badges/team_player.png',
                 'color': '#8B5CF6',
+                'rarity': 'uncommon',
+                'points': 75,
+                'criteria': {'projects_count': 5},
+                'auto_award': False,
             },
             {
-                'name': 'Campione della Diversità',
-                'description': 'Partecipa attivamente a iniziative D&I',
-                'rarity': 'epic',
-                'points': 100,
-                'color': '#EC4899',
-            },
-            {
-                'name': 'Leggenda Talent Mosaic',
-                'description': 'Raggiungi il massimo livello di engagement',
+                'name': 'Innovation Champion',
+                'description': 'Ha vinto una challenge aziendale',
+                'icon': 'badges/innovation_champion.png',
+                'color': '#F59E0B',
                 'rarity': 'legendary',
                 'points': 200,
-                'color': '#EF4444',
+                'criteria': {'challenge_wins': 1},
+                'auto_award': False,
+            },
+            {
+                'name': 'Event Enthusiast',
+                'description': 'Ha partecipato a 10+ eventi',
+                'icon': 'badges/event_enthusiast.png',
+                'color': '#EC4899',
+                'rarity': 'common',
+                'points': 50,
+                'criteria': {'events_attended': 10},
+                'auto_award': True,
             },
         ]
         
         count = 0
         for badge_data in badges_data:
-            # Per la demo, non usiamo l'icon (ImageField)
+            # Rimuovi 'icon' dai defaults se il campo è ImageField vuoto
+            icon_path = badge_data.pop('icon', None)
+            
             badge, created = Badge.objects.get_or_create(
                 name=badge_data['name'],
                 defaults={
-                    'description': badge_data['description'],
-                    'rarity': badge_data['rarity'],
-                    'points': badge_data['points'],
-                    'color': badge_data['color'],
-                    'is_active': True,
+                    **badge_data,
+                    # Lascia icon vuoto, verrà popolato dopo se necessario
                 }
             )
             if created:
@@ -449,7 +483,7 @@ class Command(BaseCommand):
         self.stdout.write(f'  ✓ {count} badge creati')
 
     def create_user_badges(self):
-        """Assegna badge ad alcuni utenti"""
+        """Assegna badge agli utenti"""
         self.stdout.write('🎖️  Assegnazione Badge...')
         
         users = User.objects.filter(is_superuser=False)
@@ -457,16 +491,16 @@ class Command(BaseCommand):
         
         count = 0
         for user in users:
-            # Ogni utente riceve 1-3 badge random
+            # Ogni utente ha 1-3 badge casuali
             num_badges = random.randint(1, 3)
-            selected_badges = random.sample(list(badges), min(num_badges, len(badges)))
+            user_badges = random.sample(list(badges), min(num_badges, len(badges)))
             
-            for badge in selected_badges:
+            for badge in user_badges:
                 user_badge, created = UserBadge.objects.get_or_create(
                     user=user,
                     badge=badge,
                     defaults={
-                        'notes': f'Assegnato automaticamente per demo',
+                        'notes': f'Badge assegnato per raggiungimento obiettivo',
                     }
                 )
                 if created:
@@ -475,74 +509,62 @@ class Command(BaseCommand):
         self.stdout.write(f'  ✓ {count} badge assegnati')
 
     def create_events(self):
-        """Crea eventi aziendali"""
+        """Crea eventi"""
         self.stdout.write('📅 Eventi...')
         
         now = timezone.now()
-        organizers = User.objects.filter(profile__is_mentor=True)
+        organizers = User.objects.filter(is_superuser=False)
         
         events_data = [
             {
-                'title': 'Workshop Django Avanzato',
-                'description': 'Impara tecniche avanzate di Django per costruire applicazioni scalabili e performanti.',
+                'title': 'Workshop Python Avanzato',
+                'description': 'Approfondimento su decorators, generators e async/await',
                 'event_type': 'workshop',
                 'start_date': now + timedelta(days=7),
-                'end_date': now + timedelta(days=7, hours=3),
-                'location': 'Sala Conferenze A - Milano',
+                'end_date': now + timedelta(days=7),
+                'location': 'Sala Riunioni A',
                 'max_participants': 20,
-                'status': 'published',
-            },
-            {
-                'title': 'Diversity & Inclusion: Best Practices',
-                'description': 'Sessione interattiva sulle migliori pratiche per promuovere la diversità in azienda.',
-                'event_type': 'training',
-                'start_date': now + timedelta(days=14),
-                'end_date': now + timedelta(days=14, hours=2),
-                'location': 'Auditorium Centrale',
                 'is_online': False,
+            },
+            {
+                'title': 'Tech Talk: Microservizi con Docker',
+                'description': 'Introduzione all\'architettura a microservizi',
+                'event_type': 'talk',
+                'start_date': now + timedelta(days=14),
+                'end_date': now + timedelta(days=14),
+                'location': 'Microsoft Teams',
                 'max_participants': 50,
-                'status': 'published',
-            },
-            {
-                'title': 'Webinar: Future of Work',
-                'description': 'Esplora le tendenze del futuro del lavoro con esperti del settore.',
-                'event_type': 'webinar',
-                'start_date': now + timedelta(days=21),
-                'end_date': now + timedelta(days=21, hours=1.5),
                 'is_online': True,
-                'location_url': 'https://zoom.us/j/example',
-                'max_participants': 100,
-                'status': 'published',
             },
             {
-                'title': 'Team Building: Escape Room Virtuale',
-                'description': 'Attività di team building per rafforzare la collaborazione tra colleghi.',
-                'event_type': 'social',
-                'start_date': now + timedelta(days=10),
-                'end_date': now + timedelta(days=10, hours=2),
-                'is_online': True,
-                'max_participants': 30,
-                'status': 'published',
-            },
-            {
-                'title': 'Conferenza Annuale Innovazione',
-                'description': 'La nostra conferenza annuale dedicata all\'innovazione tecnologica e organizzativa.',
-                'event_type': 'conference',
+                'title': 'Hackathon: Innovazione Digitale',
+                'description': '48 ore di coding per sviluppare prototipi innovativi',
+                'event_type': 'hackathon',
                 'start_date': now + timedelta(days=30),
-                'end_date': now + timedelta(days=30, hours=8),
-                'location': 'Centro Congressi Milano',
-                'max_participants': 200,
-                'status': 'published',
+                'end_date': now + timedelta(days=32),
+                'location': 'Hub Innovazione',
+                'max_participants': 40,
+                'is_online': False,
             },
             {
-                'title': 'Workshop UX/UI Design Thinking',
-                'description': 'Impara i principi del design thinking applicato alla user experience.',
+                'title': 'Networking Coffee',
+                'description': 'Incontro informale per fare networking',
+                'event_type': 'networking',
+                'start_date': now - timedelta(days=5),
+                'end_date': now - timedelta(days=5),
+                'location': 'Caffetteria Aziendale',
+                'max_participants': 30,
+                'is_online': False,
+            },
+            {
+                'title': 'UI/UX Design Masterclass',
+                'description': 'Best practices per design di interfacce moderne',
                 'event_type': 'workshop',
-                'start_date': now - timedelta(days=5),  # Evento passato
-                'end_date': now - timedelta(days=5, hours=-3),
-                'location': 'Sala Design - Roma',
+                'start_date': now + timedelta(days=21),
+                'end_date': now + timedelta(days=21),
+                'location': 'Sala Design',
                 'max_participants': 15,
-                'status': 'completed',
+                'is_online': False,
             },
         ]
         
@@ -571,25 +593,16 @@ class Command(BaseCommand):
         count = 0
         for event in events:
             # Ogni evento ha 5-15 partecipanti
-            num_participants = random.randint(5, min(15, event.max_participants or 15))
+            num_participants = random.randint(5, min(15, event.max_participants))
             participants = random.sample(list(users), min(num_participants, len(users)))
             
             for user in participants:
-                # Eventi passati hanno status 'attended' o 'no_show'
-                if event.status == 'completed':
-                    status = random.choice(['attended', 'attended', 'attended', 'no_show'])
-                    rating = random.randint(3, 5) if status == 'attended' else None
-                else:
-                    status = 'registered'
-                    rating = None
-                
                 registration, created = EventRegistration.objects.get_or_create(
                     event=event,
                     user=user,
                     defaults={
-                        'status': status,
-                        'rating': rating,
-                        'feedback': 'Evento molto interessante!' if rating else '',
+                        'status': random.choice(['registered', 'confirmed', 'confirmed']),
+                        'registered_at': timezone.now() - timedelta(days=random.randint(1, 10))
                     }
                 )
                 if created:
@@ -601,15 +614,14 @@ class Command(BaseCommand):
         """Crea relazioni di mentorship"""
         self.stdout.write('👥 Mentorship...')
         
-        mentors = User.objects.filter(profile__is_mentor=True)
-        mentees = User.objects.filter(profile__is_mentee=True)
-        
         mentorships_data = [
             ('mario.rossi', 'luca.verdi', ['Python', 'Django', 'Best Practices']),
             ('giulia.bianchi', 'elena.conti', ['Design', 'Creatività', 'Brand']),
             ('anna.neri', 'elena.conti', ['Marketing', 'Content Strategy']),
             ('sara.ferrari', 'marco.ricci', ['Project Management', 'Agile']),
             ('francesco.russo', 'marco.ricci', ['Data Analysis', 'Python']),
+            ('alessandro.bruno', 'luca.verdi', ['DevOps', 'Docker', 'CI/CD']),
+            ('mario.rossi', 'chiara.moretti', ['Backend', 'API Design']),
         ]
         
         count = 0
@@ -758,9 +770,416 @@ class Command(BaseCommand):
         
         self.stdout.write(f'  ✓ {count} partecipazioni create')
 
+    # ========== NUOVE FUNZIONI: PROJECTS ==========
+
+    def create_projects(self):
+        """Crea progetti collaborativi"""
+        self.stdout.write('🚀 Progetti...')
+        
+        now = timezone.now()
+        managers = User.objects.filter(is_staff=True)
+        
+        projects_data = [
+            {
+                'title': 'Piattaforma E-Learning Interna',
+                'description': 'Sviluppo di una piattaforma e-learning per la formazione aziendale con corsi interattivi, quiz e certificazioni.',
+                'status': 'active',
+                'priority': 'high',
+                'team_size_min': 5,
+                'team_size_max': 8,
+                'start_date': now.date() - timedelta(days=15),
+                'end_date': now.date() + timedelta(days=90),
+                'budget': 50000.00,
+                'estimated_duration_weeks': 12,
+            },
+            {
+                'title': 'Dashboard Analytics Real-time',
+                'description': 'Creazione di una dashboard per visualizzazione real-time di metriche aziendali con grafici interattivi e report automatici.',
+                'status': 'active',
+                'priority': 'urgent',
+                'team_size_min': 4,
+                'team_size_max': 6,
+                'start_date': now.date() - timedelta(days=30),
+                'end_date': now.date() + timedelta(days=60),
+                'budget': 35000.00,
+                'estimated_duration_weeks': 10,
+            },
+            {
+                'title': 'App Mobile Talent Mosaic',
+                'description': 'Sviluppo app mobile iOS/Android per gestione competenze, eventi e mentorship in mobilità.',
+                'status': 'draft',
+                'priority': 'medium',
+                'team_size_min': 6,
+                'team_size_max': 10,
+                'start_date': now.date() + timedelta(days=14),
+                'end_date': now.date() + timedelta(days=180),
+                'budget': 80000.00,
+                'estimated_duration_weeks': 20,
+            },
+            {
+                'title': 'Sistema di Matching AI',
+                'description': 'Implementazione algoritmo ML per matching automatico tra skill e progetti basato su competenze e preferenze.',
+                'status': 'matching',
+                'priority': 'high',
+                'team_size_min': 3,
+                'team_size_max': 5,
+                'start_date': now.date() - timedelta(days=7),
+                'end_date': now.date() + timedelta(days=75),
+                'budget': 40000.00,
+                'estimated_duration_weeks': 11,
+            },
+            {
+                'title': 'Redesign UI/UX Piattaforma',
+                'description': 'Completo redesign dell\'interfaccia con focus su accessibilità, usabilità e modern design patterns.',
+                'status': 'open',
+                'priority': 'medium',
+                'team_size_min': 3,
+                'team_size_max': 4,
+                'start_date': now.date() + timedelta(days=30),
+                'end_date': now.date() + timedelta(days=120),
+                'budget': 25000.00,
+                'estimated_duration_weeks': 12,
+            },
+            {
+                'title': 'Integrazione API Esterne',
+                'description': 'Integrazione con sistemi HR, calendario aziendale, e piattaforme di comunicazione (Teams, Slack).',
+                'status': 'active',
+                'priority': 'medium',
+                'team_size_min': 2,
+                'team_size_max': 4,
+                'start_date': now.date() - timedelta(days=20),
+                'end_date': now.date() + timedelta(days=50),
+                'budget': 20000.00,
+                'estimated_duration_weeks': 8,
+            },
+            {
+                'title': 'Sistema Gamification Avanzato',
+                'description': 'Implementazione sistema punti, livelli, achievements e leaderboard per aumentare engagement.',
+                'status': 'completed',
+                'priority': 'low',
+                'team_size_min': 3,
+                'team_size_max': 5,
+                'start_date': now.date() - timedelta(days=90),
+                'end_date': now.date() - timedelta(days=15),
+                'budget': 30000.00,
+                'estimated_duration_weeks': 10,
+            },
+        ]
+        
+        count = 0
+        for project_data in projects_data:
+            manager = random.choice(managers)
+            creator = random.choice(managers)
+            
+            project, created = Project.objects.get_or_create(
+                title=project_data['title'],
+                defaults={
+                    **project_data,
+                    'manager': manager,
+                    'created_by': creator,
+                }
+            )
+            if created:
+                count += 1
+        
+        self.stdout.write(f'  ✓ {count} progetti creati')
+
+    def create_project_skills(self):
+        """Assegna skill richieste ai progetti"""
+        self.stdout.write('🎯 Skill Progetti...')
+        
+        project_skills_mapping = {
+            'Piattaforma E-Learning Interna': [
+                ('Django', 5, 'required'),
+                ('React', 4, 'required'),
+                ('PostgreSQL', 3, 'required'),
+                ('UI/UX Design', 4, 'preferred'),
+                ('Docker', 3, 'nice_to_have'),
+            ],
+            'Dashboard Analytics Real-time': [
+                ('Python for Data Science', 5, 'required'),
+                ('React', 4, 'required'),
+                ('Data Visualization', 5, 'required'),
+                ('PostgreSQL', 3, 'preferred'),
+            ],
+            'App Mobile Talent Mosaic': [
+                ('React', 4, 'required'),
+                ('Node.js', 3, 'required'),
+                ('UI/UX Design', 5, 'required'),
+                ('MongoDB', 3, 'nice_to_have'),
+            ],
+            'Sistema di Matching AI': [
+                ('Machine Learning', 5, 'required'),
+                ('Python', 5, 'required'),
+                ('Data Analysis', 4, 'required'),
+                ('PostgreSQL', 3, 'preferred'),
+            ],
+            'Redesign UI/UX Piattaforma': [
+                ('UI/UX Design', 5, 'required'),
+                ('Figma', 4, 'required'),
+                ('Graphic Design', 4, 'preferred'),
+                ('JavaScript', 3, 'nice_to_have'),
+            ],
+            'Integrazione API Esterne': [
+                ('Python', 4, 'required'),
+                ('Django', 4, 'required'),
+                ('FastAPI', 3, 'preferred'),
+                ('Docker', 3, 'nice_to_have'),
+            ],
+            'Sistema Gamification Avanzato': [
+                ('Django', 4, 'required'),
+                ('JavaScript', 3, 'required'),
+                ('PostgreSQL', 3, 'required'),
+                ('React', 3, 'preferred'),
+            ],
+        }
+        
+        count = 0
+        for project_title, skills_list in project_skills_mapping.items():
+            try:
+                project = Project.objects.get(title=project_title)
+                
+                for skill_name, min_prof, importance in skills_list:
+                    try:
+                        skill = Skill.objects.get(name=skill_name)
+                        
+                        proj_skill, created = ProjectRequiredSkill.objects.get_or_create(
+                            project=project,
+                            skill=skill,
+                            defaults={
+                                'min_proficiency': min_prof,
+                                'importance': importance,
+                                'min_years_experience': 1.0 if importance == 'required' else 0.5,
+                                'weight': 100 if importance == 'required' else (50 if importance == 'preferred' else 20),
+                            }
+                        )
+                        if created:
+                            count += 1
+                    except Skill.DoesNotExist:
+                        pass
+            except Project.DoesNotExist:
+                pass
+        
+        self.stdout.write(f'  ✓ {count} skill-progetto create')
+
+    def create_project_roles(self):
+        """Crea ruoli per i progetti"""
+        self.stdout.write('👔 Ruoli Progetti...')
+        
+        projects = Project.objects.all()
+        
+        roles_templates = [
+            {'title': 'Backend Developer', 'description': 'Sviluppo API e logica server-side'},
+            {'title': 'Frontend Developer', 'description': 'Sviluppo interfaccia utente'},
+            {'title': 'UI/UX Designer', 'description': 'Design interfaccia e user experience'},
+            {'title': 'Project Lead', 'description': 'Coordinamento team e gestione progetto'},
+            {'title': 'Data Scientist', 'description': 'Analisi dati e machine learning'},
+            {'title': 'DevOps Engineer', 'description': 'Infrastruttura e deployment'},
+        ]
+        
+        count = 0
+        for project in projects:
+            # Ogni progetto ha 2-4 ruoli diversi
+            num_roles = random.randint(2, 4)
+            project_roles = random.sample(roles_templates, num_roles)
+            
+            for role_data in project_roles:
+                role, created = ProjectRole.objects.get_or_create(
+                    project=project,
+                    title=role_data['title'],
+                    defaults={
+                        'description': role_data['description'],
+                        'positions_available': random.randint(1, 3),
+                        'positions_filled': 0,
+                    }
+                )
+                if created:
+                    count += 1
+        
+        self.stdout.write(f'  ✓ {count} ruoli creati')
+
+    def create_team_members(self):
+        """Assegna membri ai team dei progetti"""
+        self.stdout.write('👥 Team Members...')
+        
+        projects = Project.objects.filter(status__in=['active', 'matching'])
+        users = User.objects.filter(is_superuser=False)
+        
+        count = 0
+        for project in projects:
+            roles = ProjectRole.objects.filter(project=project)
+            
+            # Ogni progetto ha 3-6 membri
+            num_members = random.randint(3, min(6, project.team_size_max))
+            members = random.sample(list(users), min(num_members, len(users)))
+            
+            for i, user in enumerate(members):
+                role = random.choice(roles) if roles else None
+                status = random.choice(['invited', 'accepted', 'accepted', 'accepted'])
+                
+                member, created = TeamMember.objects.get_or_create(
+                    project=project,
+                    user=user,
+                    defaults={
+                        'role': role,
+                        'status': status,
+                        'match_score': random.uniform(60.0, 95.0),
+                        'match_reasoning': {
+                            'skill_match': random.uniform(0.7, 1.0),
+                            'experience_match': random.uniform(0.6, 0.95),
+                            'availability': random.choice([True, True, False]),
+                        },
+                        # invited_at è auto_now_add, non va settato
+                        # responded_at e joined_at settabili solo se accettato
+                        'responded_at': timezone.now() - timedelta(days=random.randint(1, 15)) if status in ['accepted', 'declined'] else None,
+                        'joined_at': timezone.now() - timedelta(days=random.randint(1, 10)) if status == 'accepted' else None,
+                    }
+                )
+                if created:
+                    count += 1
+        
+        self.stdout.write(f'  ✓ {count} team members aggiunti')
+
+    def create_ai_matching_runs(self):
+        """Crea run di AI matching per i progetti"""
+        self.stdout.write('🤖 AI Matching Runs...')
+        
+        projects = Project.objects.filter(status='matching')
+        admins = User.objects.filter(is_staff=True)
+        
+        count = 0
+        for project in projects:
+            # Ogni progetto in matching ha 1-2 run
+            num_runs = random.randint(1, 2)
+            
+            for i in range(num_runs):
+                admin = random.choice(admins) if admins else None
+                
+                run, created = AIMatchingRun.objects.get_or_create(
+                    project=project,
+                    executed_by=admin,
+                    defaults={
+                        'parameters': {
+                            'skill_weight': 0.4,
+                            'experience_weight': 0.25,
+                            'availability_weight': 0.2,
+                            'diversity_bonus': 0.15,
+                        },
+                        'candidates_found': random.randint(5, 15),
+                        'candidates_data': [
+                            {
+                                'user_id': random.randint(1, 10),
+                                'username': f'user_{random.randint(1, 10)}',
+                                'match_score': random.uniform(60.0, 98.0),
+                                'skill_matches': random.randint(3, 8),
+                            }
+                            for _ in range(random.randint(5, 10))
+                        ],
+                        'execution_time_seconds': random.uniform(2.5, 25.0),
+                        'success': random.choice([True, True, True, False]),
+                        'error_message': 'Timeout durante l\'analisi' if random.random() > 0.8 else '',
+                    }
+                )
+                if created:
+                    count += 1
+        
+        self.stdout.write(f'  ✓ {count} AI matching runs creati')
+
+    def create_admin_actions(self):
+        """Crea log di azioni admin"""
+        self.stdout.write('📋 Admin Actions...')
+        
+        admins = User.objects.filter(is_staff=True)
+        projects = Project.objects.all()
+        
+        if not admins or not projects:
+            self.stdout.write('  ⚠️  Nessun admin o progetto trovato')
+            return
+        
+        actions_data = [
+            ('create', 'Progetto creato'),
+            ('update', 'Status progetto aggiornato'),
+            ('create', 'Nuovo progetto aggiunto al sistema'),
+            ('approve', 'Team member approvato'),
+            ('update', 'Budget progetto modificato'),
+            ('matching', 'Esecuzione algoritmo AI matching'),
+            ('update', 'Scadenza progetto posticipata'),
+            ('export', 'Export dati progetto in CSV'),
+        ]
+        
+        count = 0
+        for action_type, description in actions_data:
+            admin = random.choice(admins)
+            project = random.choice(projects)
+            
+            action = AdminAction.objects.create(
+                admin=admin,
+                action_type=action_type,
+                content_type='Project',
+                object_id=project.id,
+                object_repr=project.title,
+                description=f'{description}: {project.title}',
+                changes={
+                    'timestamp': str(timezone.now()),
+                    'project_id': project.id,
+                    'project_status': project.status,
+                },
+                ip_address=f'192.168.1.{random.randint(1, 255)}',
+                user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            )
+            count += 1
+        
+        self.stdout.write(f'  ✓ {count} admin actions create')
+
+    def create_analytics_data(self):
+        """Crea dati di analytics per gli utenti"""
+        self.stdout.write('📊 Analytics Data...')
+        
+        users = User.objects.filter(is_superuser=False)
+        
+        # Azioni disponibili in ActivityLog.ACTION_TYPES
+        activities = [
+            ('login', None, None),
+            ('logout', None, None),
+            ('profile_update', 'UserProfile', None),
+            ('skill_add', 'Skill', None),
+            ('event_register', 'Event', None),
+            ('badge_earned', 'Badge', None),
+        ]
+        
+        count = 0
+        for user in users:
+            # Ogni utente ha 10-30 attività
+            num_activities = random.randint(10, 30)
+            
+            for i in range(num_activities):
+                days_ago = random.randint(1, 90)
+                action, entity_type, entity_id = random.choice(activities)
+                
+                activity, created = ActivityLog.objects.get_or_create(
+                    user=user,
+                    action=action,
+                    created_at=timezone.now() - timedelta(days=days_ago, hours=random.randint(0, 23)),
+                    defaults={
+                        'entity_type': entity_type or '',
+                        'entity_id': entity_id or random.randint(1, 10),
+                        'ip_address': f'192.168.1.{random.randint(1, 255)}',
+                        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        'metadata': {
+                            'session_id': f'session_{random.randint(1000, 9999)}',
+                            'duration_seconds': random.randint(60, 3600),
+                        }
+                    }
+                )
+                if created:
+                    count += 1
+        
+        self.stdout.write(f'  ✓ {count} attività analytics create')
+
     def print_summary(self):
         """Stampa riepilogo dei dati creati"""
         self.stdout.write('\n📊 RIEPILOGO DATI:')
+        self.stdout.write('\n   === DATI ESISTENTI ===')
         self.stdout.write(f'   👤 Utenti: {User.objects.filter(is_superuser=False).count()}')
         self.stdout.write(f'   📁 Categorie Competenze: {SkillCategory.objects.count()}')
         self.stdout.write(f'   🧠 Competenze: {Skill.objects.count()}')
@@ -774,7 +1193,31 @@ class Command(BaseCommand):
         self.stdout.write(f'   🏆 Challenge: {Challenge.objects.count()}')
         self.stdout.write(f'   🎯 Partecipazioni: {ChallengeParticipation.objects.count()}')
         
+        self.stdout.write('\n   === NUOVI DATI (PROJECTS & ANALYTICS) ===')
+        self.stdout.write(f'   🚀 Progetti: {Project.objects.count()}')
+        self.stdout.write(f'   🎯 Skill Progetti: {ProjectRequiredSkill.objects.count()}')
+        self.stdout.write(f'   👔 Ruoli: {ProjectRole.objects.count()}')
+        self.stdout.write(f'   👥 Team Members: {TeamMember.objects.count()}')
+        self.stdout.write(f'   🤖 AI Matching Runs: {AIMatchingRun.objects.count()}')
+        self.stdout.write(f'   📋 Admin Actions: {AdminAction.objects.count()}')
+        self.stdout.write(f'   📊 Activity Logs: {ActivityLog.objects.count()}')
+        
         self.stdout.write('\n💡 CREDENZIALI DEMO:')
-        self.stdout.write('   Username: [qualsiasi utente sopra]')
-        self.stdout.write('   Password: demo123')
-        self.stdout.write('\n   Es: mario.rossi / demo123')
+        self.stdout.write('   👤 User: mario.rossi / demo123 (Staff/Admin)')
+        self.stdout.write('   👤 User: anna.neri / demo123 (Staff/Admin)')
+        self.stdout.write('   👤 User: giulia.bianchi / demo123')
+        self.stdout.write('   👤 User: luca.verdi / demo123')
+        
+        self.stdout.write('\n🎯 PROGETTI CREATI:')
+        projects = Project.objects.all()
+        for project in projects:
+            status_icon = {
+                'draft': '📝',
+                'open': '🔓',
+                'active': '🚀',
+                'matching': '🤖',
+                'completed': '✅',
+                'cancelled': '❌'
+            }.get(project.status, '❓')
+            
+            self.stdout.write(f'   {status_icon} {project.title} ({project.get_status_display()})')
