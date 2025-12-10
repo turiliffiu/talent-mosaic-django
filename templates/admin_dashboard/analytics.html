@@ -1,0 +1,159 @@
+{% extends 'admin_dashboard/base_admin.html' %}
+
+{% block title %}Analytics - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-chart-line text-success"></i> Analytics Dashboard</h2>
+            <p class="text-muted">Statistiche e analisi della piattaforma</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                    <h3 class="text-primary">{{ user_growth.total }}</h3>
+                    <p class="mb-0">Utenti Totali</p>
+                    <small class="text-muted">+{{ user_growth.this_month }} questo mese</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                    <h3 class="text-warning">{{ project_stats.total }}</h3>
+                    <p class="mb-0">Progetti</p>
+                    <small class="text-muted">{{ project_stats.active }} attivi</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-info">
+                <div class="card-body">
+                    <i class="fas fa-calendar fa-2x text-info mb-2"></i>
+                    <h3 class="text-info">{{ stats.total_events|default:0 }}</h3>
+                    <p class="mb-0">Eventi</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <i class="fas fa-star fa-2x text-success mb-2"></i>
+                    <h3 class="text-success">{{ stats.total_challenges|default:0 }}</h3>
+                    <p class="mb-0">Challenge</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Skills -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-star"></i> Top Skills</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_skills %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Skill</th>
+                                    <th class="text-center">Utenti</th>
+                                    <th class="text-center">Media Proficiency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for skill in top_skills %}
+                                <tr>
+                                    <td><strong>{{ skill.name }}</strong></td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary">{{ skill.user_count }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success">{{ skill.avg_proficiency|floatformat:1 }}/5</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Nessuna skill disponibile</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- User Growth -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> Crescita Utenti</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="text-success">{{ user_growth.this_week }}</h4>
+                            <small class="text-muted">Questa settimana</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-primary">{{ user_growth.this_month }}</h4>
+                            <small class="text-muted">Questo mese</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-info">{{ user_growth.total }}</h4>
+                            <small class="text-muted">Totale</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-project-diagram"></i> Progetti</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="text-success">{{ project_stats.active }}</h4>
+                            <small class="text-muted">Attivi</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-secondary">{{ project_stats.draft }}</h4>
+                            <small class="text-muted">Draft</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-primary">{{ project_stats.total }}</h4>
+                            <small class="text-muted">Totali</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> <strong>Analytics Dashboard</strong> - Visualizza le statistiche principali della piattaforma Talent Mosaic. Per analytics più dettagliate, usa la sezione Analytics principale.
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Analytics dashboard loaded');
+});
+</script>
+{% endblock %}

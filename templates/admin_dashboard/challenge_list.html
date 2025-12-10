@@ -1,0 +1,140 @@
+{% extends 'admin_dashboard/base_admin.html' %}
+
+{% block title %}Challenge - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-trophy text-warning"></i> Gestione Challenge</h2>
+            <p class="text-muted">Visualizza tutte le challenge della piattaforma</p>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> <strong>Nota:</strong> Per creare o modificare challenge, usa la sezione Challenge principale di Talent Mosaic.
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-warning">{{ stats.total }}</h3>
+                    <p class="mb-0">Challenge Totali</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-success">{{ stats.active }}</h3>
+                    <p class="mb-0">Attive</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-info">{{ stats.upcoming }}</h3>
+                    <p class="mb-0">Prossime</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ stats.total_participations }}</h3>
+                    <p class="mb-0">Partecipazioni</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista Challenge -->
+    <div class="card">
+        <div class="card-body">
+            {% if challenges %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Challenge</th>
+                            <th>Periodo</th>
+                            <th>Punti</th>
+                            <th>Partecipanti</th>
+                            <th>Completati</th>
+                            <th>Status</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for challenge in challenges %}
+                        <tr>
+                            <td>
+                                <strong>{{ challenge.title }}</strong><br>
+                                <small class="text-muted">{{ challenge.description|truncatewords:8 }}</small>
+                            </td>
+                            <td>
+                                <small>
+                                    {{ challenge.start_date|date:"d/m/Y" }}<br>
+                                    → {{ challenge.end_date|date:"d/m/Y" }}
+                                </small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-star"></i> {{ challenge.points }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-primary">{{ challenge.total_participants }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">{{ challenge.total_completed }}</span>
+                                {% if challenge.total_participants > 0 %}
+                                <br><small class="text-muted">{{ challenge.total_completed|floatformat:0 }}%</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% now "Y-m-d" as today %}
+                                {% if challenge.start_date > today %}
+                                <span class="badge bg-info">Prossima</span>
+                                {% elif challenge.end_date < today %}
+                                <span class="badge bg-secondary">Conclusa</span>
+                                {% else %}
+                                <span class="badge bg-success">Attiva</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" disabled title="Vai alla pagina challenge per vedere dettagli">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-secondary" disabled>
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-trophy fa-5x text-muted mb-3"></i>
+                <h4>Nessuna challenge trovata</h4>
+                <p class="text-muted">Le challenge appariranno qui quando verranno create.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Challenge page loaded');
+});
+</script>
+{% endblock %}

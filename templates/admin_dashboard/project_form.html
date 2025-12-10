@@ -1,0 +1,98 @@
+{% extends 'admin_dashboard/base_admin.html' %}
+
+{% block title %}{% if project.id %}Modifica{% else %}Nuovo{% endif %} Progetto - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-edit"></i> {% if project.id %}Modifica{% else %}Nuovo{% endif %} Progetto</h2>
+        </div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Informazioni Base</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Titolo *</label>
+                            <input type="text" name="title" class="form-control" 
+                                   value="{{ project.title|default:'' }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descrizione *</label>
+                            <textarea name="description" class="form-control" rows="5" required>{{ project.description|default:'' }}</textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-select">
+                                    {% for value, label in status_choices %}
+                                    <option value="{{ value }}" {% if project.status == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Priorità</label>
+                                <select name="priority" class="form-select">
+                                    {% for value, label in priority_choices %}
+                                    <option value="{{ value }}" {% if project.priority == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Team & Timeline</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Durata (settimane)</label>
+                            <input type="number" name="duration" class="form-control" 
+                                   value="{{ project.estimated_duration_weeks|default:4 }}" min="1" max="52">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Team Min</label>
+                            <input type="number" name="team_min" class="form-control" 
+                                   value="{{ project.team_size_min|default:3 }}" min="1">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Team Max</label>
+                            <input type="number" name="team_max" class="form-control" 
+                                   value="{{ project.team_size_max|default:8 }}" min="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-save"></i> Salva Progetto
+                        </button>
+                        <a href="{% url 'admin_dashboard:project_list' %}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-times"></i> Annulla
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

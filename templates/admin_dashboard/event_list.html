@@ -1,0 +1,162 @@
+{% extends 'admin_dashboard/base_admin.html' %}
+
+{% block title %}Eventi - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-calendar-alt text-primary"></i> Gestione Eventi</h2>
+            <p class="text-muted">Visualizza tutti gli eventi della piattaforma</p>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> <strong>Nota:</strong> Per creare o modificare eventi, usa la sezione Eventi principale di Talent Mosaic.
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ stats.total }}</h3>
+                    <p class="mb-0">Eventi Totali</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-success">{{ stats.upcoming }}</h3>
+                    <p class="mb-0">Prossimi Eventi</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-muted">{{ stats.past }}</h3>
+                    <p class="mb-0">Eventi Passati</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtri -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Tipo Evento</label>
+                    <select name="type" class="form-select">
+                        <option value="">Tutti i tipi</option>
+                        {% for value, label in event_types %}
+                        <option value="{{ value }}" {% if type_filter == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">Tutti</option>
+                        <option value="upcoming" {% if status_filter == 'upcoming' %}selected{% endif %}>Prossimi</option>
+                        <option value="past" {% if status_filter == 'past' %}selected{% endif %}>Passati</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Filtra
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista Eventi -->
+    <div class="card">
+        <div class="card-body">
+            {% if events %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Evento</th>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Location</th>
+                            <th>Partecipanti</th>
+                            <th>Status</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events %}
+                        <tr>
+                            <td>
+                                <strong>{{ event.title }}</strong><br>
+                                <small class="text-muted">{{ event.description|truncatewords:10 }}</small>
+                            </td>
+                            <td>
+                                {{ event.start_date|date:"d M Y" }}<br>
+                                <small class="text-muted">{{ event.start_date|date:"H:i" }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ event.get_event_type_display }}</span>
+                            </td>
+                            <td>
+                                {% if event.is_online %}
+                                <span class="badge bg-success">Online</span>
+                                {% else %}
+                                {{ event.location|truncatewords:3 }}
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-primary">{{ event.registrations_count|default:0 }}</span>
+                                {% if event.max_participants %}
+                                / {{ event.max_participants }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if event.start_date > now %}
+                                <span class="badge bg-warning">Prossimo</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Passato</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" disabled title="Vai alla pagina eventi per vedere dettagli">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" disabled>
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-alt fa-5x text-muted mb-3"></i>
+                <h4>Nessun evento trovato</h4>
+                <p class="text-muted">Gli eventi appariranno qui quando verranno creati.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Eventi page loaded');
+});
+</script>
+{% endblock %}
