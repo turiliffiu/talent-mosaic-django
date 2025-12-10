@@ -227,7 +227,7 @@ print_success "File .env creato"
 
 # Preparazione migrazioni database per tutte le app
 print_info "Preparazione migrazioni database..."
-APPS=("accounts" "skills" "matching" "mentorship" "events" "challenges" "badges" "analytics" "core" "api")
+APPS=("accounts" "skills" "matching" "mentorship" "events" "challenges" "badges" "analytics" "core" "api" "projects")
 
 for app in "${APPS[@]}"; do
     print_info "Migrazioni per ${app}..."
